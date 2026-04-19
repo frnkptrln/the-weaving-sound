@@ -9,11 +9,20 @@ chaos into a grammar only machines remember.
 
 ---
 
-## Concept
+## Overview
 
-**the-weaving-sound** is an infinite, generative audio artwork that never repeats.
+**the-weaving-sound** is a project at the intersection of generative sound synthesis and algorithmic composition — written in [SuperCollider](https://supercollider.github.io/).
 
-It models an ecosystem of sound rather than a composition. At its core is a **state machine** — *the Conductor* — that breathes through five phases over hours of continuous output:
+It consists of two parts:
+
+1. **`the-weaving-sound/`** — The main work: an infinite, generative audio installation that never repeats.
+2. **`sketch/`** — A collection of standalone sketches and tracks that emerged as experiments, prototypes, and studies around the project.
+
+---
+
+## The Main Work
+
+At its core is a **state machine** — *the Conductor* — that breathes through five phases over hours of continuous output:
 
 | Phase | Character | Duration |
 |---|---|---|
@@ -33,16 +42,43 @@ It models an ecosystem of sound rather than a composition. At its core is a **st
 - **Shimmer pad** — six detuned sine partials with independent amplitude LFOs
 - **Master FX chain** — tape-delay (CombC with wow/flutter LFO → LPF tape-softening) feeding FreeVerb2 (room ≈ 0.93), followed by soft tanh saturation and a brickwall limiter
 
+### Signal Flow
+
+```
+[void_drone]  ──┐
+[void_pad]    ──┤
+[void_pulse]  ──┼──► ~sendBus (Bus.audio stereo) ──► [fx_master] ──► Hardware Out
+[thread_pluck]──┤         (all sources write here)    tape-delay
+[chaos_glitch]──┤                                     + reverb
+[gran_cloud]  ──┘                                     + limiter
+```
+
+---
+
+## Sketches
+
+The `sketch/` directory contains standalone SuperCollider files — each a self-contained track or experiment:
+
+| File | Description | BPM |
+|---|---|---|
+| `sc_first.scd` | First steps: acid bassline, kick, hi-hat, snare, pad — a modular techno toolkit for manual assembly (Pdef-based). | 135 |
+| `sc_sec_tp.scd` | Dub-techno study with vinyl atmosphere, ghost pads, deep kick, sub-bass, dub chords, and rimshot. Fully arranged, self-running track. | 118 |
+| `sc_3_track1.scd` | Extension of the dub study with a melancholic `tearPluck` melody in C minor. Includes breakdown and outro. | 118 |
+| `sc_3_track2.scd` | *"Kernel Panic"* — breakbeat track with Reese bass, FM hi-hats, glass pad, and a hard drop at 140 BPM. | 140 |
+| `sc_3_track3.scd` | *"Daemon"* — minimal techno with rolling bass, arpeggio data stream (ping-pong delay), and polyrhythmic bassline mutation. | 125 |
+
+Each file can be opened and evaluated directly in SuperCollider — no external setup required.
+
 ---
 
 ## Dependencies
 
 ### Required
 
-| Software | Install (Arch Linux) | Install (Ubuntu/Debian) | Install (macOS) |
+| Software | Arch Linux | Ubuntu / Debian | macOS |
 |---|---|---|---|
 | **SuperCollider** ≥ 3.12 | `sudo pacman -S supercollider` | `sudo apt install supercollider` | `brew install supercollider` |
-| **sc3-plugins** | `sudo pacman -S sc3-plugins` | `sudo apt install sc3-plugins` | [Download from GitHub releases](https://github.com/supercollider/sc3-plugins/releases) |
+| **sc3-plugins** | `sudo pacman -S sc3-plugins` | `sudo apt install sc3-plugins` | [GitHub Releases](https://github.com/supercollider/sc3-plugins/releases) |
 
 > **sc3-plugins is mandatory.** The `LorenzL` UGen (chaotic oscillator) lives there.
 
@@ -63,13 +99,13 @@ sudo usermod -aG realtime $USER
 
 ---
 
-## Starting the Artwork
+## Getting Started
 
 ### Method 1 — Terminal (headless, recommended)
 
 ```bash
 git clone https://github.com/frnkptrln/the-weaving-sound.git
-cd the-weaving-sound
+cd the-weaving-sound/the-weaving-sound
 chmod +x start.sh
 ./start.sh
 ```
@@ -82,30 +118,31 @@ Press `Ctrl+C` to stop. The piece runs indefinitely — leave it overnight.
 2. Boot the server: **Language → Boot Server** (or `Ctrl+B`).
 3. Select all (`Ctrl+A`) and evaluate (`Ctrl+Enter`).
 
+### Running Sketches
+
+Open any `.scd` file from `sketch/` in the SuperCollider IDE, boot the server, select all and evaluate. The tracks start and stop themselves.
+
 ---
 
 ## Repository Structure
 
 ```
 the-weaving-sound/
-├── README.md               ← You are here
-├── start.sh                ← Headless launcher (bash)
-└── src/
-    ├── main.scd            ← Master boot process
-    ├── 01_synthdefs.scd    ← All SynthDef definitions (6 voices + FX)
-    ├── 02_fx_routing.scd   ← FX SynthDef, bus/group setup, ~startFxRouting
-    └── 03_weaver_logic.scd ← Generative conductor, ~startWeaver
-```
-
-### Signal Flow
-
-```
-[void_drone]  ──┐
-[void_pad]    ──┤
-[void_pulse]  ──┼──► ~sendBus (Bus.audio stereo) ──► [fx_master] ──► Hardware Out
-[thread_pluck]──┤         (all sources write here)    tape-delay
-[chaos_glitch]──┤                                     + reverb
-[gran_cloud]  ──┘                                     + limiter
+├── LICENSE
+├── sketch/                         ← Standalone sketches & tracks
+│   ├── sc_first.scd                   Acid techno toolkit (135 BPM)
+│   ├── sc_sec_tp.scd                  Dub-techno study (118 BPM)
+│   ├── sc_3_track1.scd                Dub + melody (118 BPM)
+│   ├── sc_3_track2.scd                "Kernel Panic" breakbeat (140 BPM)
+│   └── sc_3_track3.scd                "Daemon" minimal techno (125 BPM)
+└── the-weaving-sound/              ← The generative main work
+    ├── README.md                      You are here
+    ├── start.sh                       Headless launcher (bash)
+    └── src/
+        ├── main.scd                   Master boot process
+        ├── 01_synthdefs.scd           All SynthDef definitions (6 voices + FX)
+        ├── 02_fx_routing.scd          FX SynthDef, bus/group setup, ~startFxRouting
+        └── 03_weaver_logic.scd        Generative conductor, ~startWeaver
 ```
 
 ---
