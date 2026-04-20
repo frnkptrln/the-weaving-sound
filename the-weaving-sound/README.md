@@ -1,26 +1,10 @@
-# the-weaving-sound
+# the-weaving-sound — The Main Work
 
-```
-from the digital abyss, algorithmic threads emerge —
-weaving lamentation into architecture,
-silence into braided noise,
-chaos into a grammar only machines remember.
-```
+An infinite, generative audio installation that never repeats.
 
 ---
 
-## Overview
-
-**the-weaving-sound** is a project at the intersection of generative sound synthesis and algorithmic composition — written in [SuperCollider](https://supercollider.github.io/).
-
-It consists of two parts:
-
-1. **`the-weaving-sound/`** — The main work: an infinite, generative audio installation that never repeats.
-2. **`sketch/`** — A collection of standalone sketches and tracks that emerged as experiments, prototypes, and studies around the project.
-
----
-
-## The Main Work
+## The Conductor
 
 At its core is a **state machine** — *the Conductor* — that breathes through five phases over hours of continuous output:
 
@@ -32,7 +16,9 @@ At its core is a **state machine** — *the Conductor* — that breathes through
 | **CHAOS** | The Lorenz attractor breaks free. Rapid-fire glitch walls. The pulse accelerates. Time distorts. | 30 sec – 1.5 min |
 | **COLLAPSE** | One by one, every thread dissolves. The sound reclaims its silence. | 30 – 60 sec |
 
-### Sonic DNA
+---
+
+## Sonic DNA
 
 - **Sub-bass drone** — multi-partial sine bed with slow formant animation (Resonz filters modulated by LFNoise2)
 - **Karplus-Strong strings** — physical-model plucks as sparse melodic events; pitch drawn from an A-minor modal vocabulary
@@ -42,7 +28,9 @@ At its core is a **state machine** — *the Conductor* — that breathes through
 - **Shimmer pad** — six detuned sine partials with independent amplitude LFOs
 - **Master FX chain** — tape-delay (CombC with wow/flutter LFO → LPF tape-softening) feeding FreeVerb2 (room ≈ 0.93), followed by soft tanh saturation and a brickwall limiter
 
-### Signal Flow
+---
+
+## Signal Flow
 
 ```
 [void_drone]  ──┐
@@ -55,57 +43,11 @@ At its core is a **state machine** — *the Conductor* — that breathes through
 
 ---
 
-## Sketches
-
-The `sketch/` directory contains standalone SuperCollider files — each a self-contained track or experiment:
-
-| File | Description | BPM |
-|---|---|---|
-| `sc_first.scd` | First steps: acid bassline, kick, hi-hat, snare, pad — a modular techno toolkit for manual assembly (Pdef-based). | 135 |
-| `sc_sec_tp.scd` | Dub-techno study with vinyl atmosphere, ghost pads, deep kick, sub-bass, dub chords, and rimshot. Fully arranged, self-running track. | 118 |
-| `sc_3_track1.scd` | Extension of the dub study with a melancholic `tearPluck` melody in C minor. Includes breakdown and outro. | 118 |
-| `sc_3_track2.scd` | *"Kernel Panic"* — breakbeat track with Reese bass, FM hi-hats, glass pad, and a hard drop at 140 BPM. | 140 |
-| `sc_3_track3.scd` | *"Daemon"* — minimal techno with rolling bass, arpeggio data stream (ping-pong delay), and polyrhythmic bassline mutation. | 125 |
-
-Each file can be opened and evaluated directly in SuperCollider — no external setup required.
-
----
-
-## Dependencies
-
-### Required
-
-| Software | Arch Linux | Ubuntu / Debian | macOS |
-|---|---|---|---|
-| **SuperCollider** ≥ 3.12 | `sudo pacman -S supercollider` | `sudo apt install supercollider` | `brew install supercollider` |
-| **sc3-plugins** | `sudo pacman -S sc3-plugins` | `sudo apt install sc3-plugins` | [GitHub Releases](https://github.com/supercollider/sc3-plugins/releases) |
-
-> **sc3-plugins is mandatory.** The `LorenzL` UGen (chaotic oscillator) lives there.
-
-### Recommended (Arch / PipeWire)
-
-```bash
-# Low-latency PipeWire quantum (256 frames ≈ 5.3 ms at 48 kHz)
-# Add to /etc/pipewire/pipewire.conf.d/99-lowlatency.conf:
-context.properties = {
-    default.clock.quantum     = 256
-    default.clock.min-quantum = 128
-}
-
-# Real-time privileges — add your user to the 'realtime' group:
-sudo usermod -aG realtime $USER
-# Then log out and back in.
-```
-
----
-
-## Getting Started
+## Running
 
 ### Method 1 — Terminal (headless, recommended)
 
 ```bash
-git clone https://github.com/frnkptrln/the-weaving-sound.git
-cd the-weaving-sound/the-weaving-sound
 chmod +x start.sh
 ./start.sh
 ```
@@ -118,31 +60,19 @@ Press `Ctrl+C` to stop. The piece runs indefinitely — leave it overnight.
 2. Boot the server: **Language → Boot Server** (or `Ctrl+B`).
 3. Select all (`Ctrl+A`) and evaluate (`Ctrl+Enter`).
 
-### Running Sketches
-
-Open any `.scd` file from `sketch/` in the SuperCollider IDE, boot the server, select all and evaluate. The tracks start and stop themselves.
-
 ---
 
-## Repository Structure
+## Source Files
 
 ```
 the-weaving-sound/
-├── LICENSE
-├── sketch/                         ← Standalone sketches & tracks
-│   ├── sc_first.scd                   Acid techno toolkit (135 BPM)
-│   ├── sc_sec_tp.scd                  Dub-techno study (118 BPM)
-│   ├── sc_3_track1.scd                Dub + melody (118 BPM)
-│   ├── sc_3_track2.scd                "Kernel Panic" breakbeat (140 BPM)
-│   └── sc_3_track3.scd                "Daemon" minimal techno (125 BPM)
-└── the-weaving-sound/              ← The generative main work
-    ├── README.md                      You are here
-    ├── start.sh                       Headless launcher (bash)
-    └── src/
-        ├── main.scd                   Master boot process
-        ├── 01_synthdefs.scd           All SynthDef definitions (6 voices + FX)
-        ├── 02_fx_routing.scd          FX SynthDef, bus/group setup, ~startFxRouting
-        └── 03_weaver_logic.scd        Generative conductor, ~startWeaver
+├── README.md               ← You are here
+├── start.sh                ← Headless launcher (bash)
+└── src/
+    ├── main.scd            ← Master boot process
+    ├── 01_synthdefs.scd    ← All SynthDef definitions (6 voices + FX)
+    ├── 02_fx_routing.scd   ← FX SynthDef, bus/group setup, ~startFxRouting
+    └── 03_weaver_logic.scd ← Generative conductor, ~startWeaver
 ```
 
 ---
@@ -154,14 +84,3 @@ the-weaving-sound/
 - `s.sync` is called at each critical transition in `main.scd` to prevent race conditions between SynthDef compilation and Synth instantiation.
 - Gate-sustained synths (`void_drone`, `void_pad`, `granular_cloud`) are released gracefully via `gate: 0`, allowing their ASR envelopes to complete before `doneAction: 2` frees the node.
 - Server memory is pre-allocated to 64 MB (`s.options.memSize = 65536`) to accommodate the granular engine's internal buffers.
-
----
-
-## License
-
-Released into the sound under the **MIT License**.  
-Use it. Break it. Let it run for 72 hours unattended. That is what it was made for.
-
----
-
-*"The loom does not know it is weaving. That is its only freedom."*
