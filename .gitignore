@@ -1,0 +1,23 @@
+# Local agent/session state
+.codex
+.codex/
+
+# SuperCollider runtime and local output
+recordings/
+renders/
+exports/
+*.log
+*.osc
+
+# Editor/OS files
+.DS_Store
+Thumbs.db
+*~
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Audio render scratch directories
+tmp/
+temp/

@@ -33,6 +33,8 @@ The `sketch/` directory contains standalone SuperCollider files — each a self-
 | `sc_3_track1.scd` | Extension of the dub study with a melancholic `tearPluck` melody in C minor. Includes breakdown and outro. | 118 |
 | `sc_3_track2.scd` | *"Kernel Panic"* — breakbeat track with Reese bass, FM hi-hats, glass pad, and a hard drop. | 140 |
 | `sc_3_track3.scd` | *"Daemon"* — minimal techno with rolling bass, arpeggio data stream (ping-pong delay), and polyrhythmic bassline mutation. | 125 |
+| `sc_4_betonmembran.scd` | *"Betonmembran"* — industrial hall study: concrete sub-pressure, steel resonance, electrical arc dust, and an atonal infrastructure grid. | 118 |
+| `sc_5_index_of_almost.scd` | *"Index of Almost"* — intimate generative study of unstable choice: hovering tones, interrupted pulses, formant traces, and self-erasing rhythmic gates. | 96 |
 
 Each file can be opened and evaluated directly in SuperCollider — no external setup required.
 
@@ -98,7 +100,9 @@ the-weaving-sound/
 │   ├── sc_sec_tp.scd                  Dub-techno study (118 BPM)
 │   ├── sc_3_track1.scd                Dub + melody (118 BPM)
 │   ├── sc_3_track2.scd                "Kernel Panic" breakbeat (140 BPM)
-│   └── sc_3_track3.scd                "Daemon" minimal techno (125 BPM)
+│   ├── sc_3_track3.scd                "Daemon" minimal techno (125 BPM)
+│   ├── sc_4_betonmembran.scd          "Betonmembran" hall study (118 BPM)
+│   └── sc_5_index_of_almost.scd       "Index of Almost" generative study (96 BPM)
 └── the-weaving-sound/              ← The generative main work
     ├── README.md                      Technical deep-dive
     ├── start.sh                       Headless launcher (bash)
