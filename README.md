@@ -11,114 +11,101 @@ chaos into a grammar only machines remember.
 
 ## Overview
 
-**the-weaving-sound** is a project at the intersection of generative sound synthesis and algorithmic composition — written in [SuperCollider](https://supercollider.github.io/).
-
-It consists of two parts:
-
-| Directory | What it is |
-|---|---|
-| [`the-weaving-sound/`](the-weaving-sound/) | The main work — an infinite, generative audio installation that never repeats. A state machine (*the Conductor*) breathes through five phases (Void → Emergence → Weaving → Chaos → Collapse) over hours of continuous output. |
-| [`sketch/`](sketch/) | Standalone sketches and tracks — experiments, prototypes, and studies that emerged around the project. |
+**the-weaving-sound** is now structured as an **anthology of generative sound pieces** in [SuperCollider](https://supercollider.github.io/): multiple experiments, multiple conductors, one shared sonic language.
 
 ---
 
-## Sketches
+## Repository Layout
 
-The `sketch/` directory contains standalone SuperCollider files — each a self-contained track or experiment:
+| Directory | Role |
+|---|---|
+| [`pieces/`](pieces/) | Curated, runnable works (each with own `README.md`, `start.sh`, `src/`) |
+| [`sketches/`](sketches/) | Raw studies, prototypes, and drafts |
+| [`engines/`](engines/) | Shared synthesizer engines and sound-building modules |
+| [`core/`](core/) | Shared runtime contracts (macros, routing, lifecycle) |
 
-| File | Description | BPM |
+---
+
+## Pieces
+
+| Piece | Focus | Status |
 |---|---|---|
-| `sc_first.scd` | First steps: acid bassline, kick, hi-hat, snare, pad — a modular techno toolkit for manual assembly (Pdef-based). | 135 |
-| `sc_sec_tp.scd` | Dub-techno study with vinyl atmosphere, ghost pads, deep kick, sub-bass, dub chords, and rimshot. Fully arranged, self-running track. | 118 |
-| `sc_3_track1.scd` | Extension of the dub study with a melancholic `tearPluck` melody in C minor. Includes breakdown and outro. | 118 |
-| `sc_3_track2.scd` | *"Kernel Panic"* — breakbeat track with Reese bass, FM hi-hats, glass pad, and a hard drop. | 140 |
-| `sc_3_track3.scd` | *"Daemon"* — minimal techno with rolling bass, arpeggio data stream (ping-pong delay), and polyrhythmic bassline mutation. | 125 |
-| `sc_4_betonmembran.scd` | *"Betonmembran"* — industrial hall study: concrete sub-pressure, steel resonance, electrical arc dust, and an atonal infrastructure grid. | 118 |
-| `sc_5_index_of_almost.scd` | *"Index of Almost"* — intimate generative study of unstable choice: hovering tones, interrupted pulses, formant traces, and self-erasing rhythmic gates. | 96 |
+| [`pieces/weaving-classic/`](pieces/weaving-classic/) | Original long-form conductor work (Void → Emergence → Weaving → Chaos → Collapse) | Active |
+| [`pieces/subtractive-lab/`](pieces/subtractive-lab/) | Subtraktive Synthese Demo | Active |
+| [`pieces/fm-pressure/`](pieces/fm-pressure/) | FM-Synthese Demo | Active |
+| [`pieces/digital-lab/`](pieces/digital-lab/) | Digitale Klangsynthese Demo | Active |
+| [`pieces/physical-lab/`](pieces/physical-lab/) | Physical Modelling Demo | Active |
+| [`pieces/software-synth-lab/`](pieces/software-synth-lab/) | Software-Synthesizer Demo | Active |
+| [`pieces/granular-drift/`](pieces/granular-drift/) | Granular-Synthese Demo | Active |
 
-Each file can be opened and evaluated directly in SuperCollider — no external setup required.
+---
+
+## Synthesizer Expansion Plan
+
+To reflect different ways of building sound (aligned with common synth learning categories such as subtractive, FM, digital/wavetable, physical modeling, and granular), the shared engine roadmap is:
+
+1. **Subtractive**
+   - Oscillator stacks (saw/pulse/noise)
+   - Filter contour macros (`brightness`, `tension`)
+2. **FM**
+   - 2–6 operator templates
+   - Ratio/index morphing macros (`motion`, `grit`)
+3. **Digital / Wavetable**
+   - Timbral table scanning
+   - Spectral interpolation controls
+4. **Physical Modeling**
+   - Karplus-style plucks/strings
+   - Damping/body material controls
+5. **Granular**
+   - Grain cloud and density layers
+   - Position/size/jitter controls
+6. **Hybrid**
+   - Cross-engine morph scenes
+   - Unified macro automation over multiple engines
+
+### Consistency Contracts
+
+Across all pieces and conductors:
+
+- **Macro contract** (0..1): `brightness`, `density`, `motion`, `space`, `grit`, `tension`
+- **Lifecycle contract**: `init()`, `start()`, `stop()`, `free()`
+- **Routing contract**: sources → shared send bus → master FX
+- **Metadata contract**: piece name, BPM range, tags, engines, mode
+
+This keeps experiments diverse while preserving compatibility and maintainability.
+
+---
+
+## Getting Started
+
+### Run the classic piece
+
+```bash
+cd pieces/weaving-classic
+chmod +x start.sh
+./start.sh
+```
+
+### Open sketches
+
+Open any `.scd` from `sketches/` in SuperCollider IDE, boot server, evaluate all.
 
 ---
 
 ## Dependencies
-
-### Required
 
 | Software | Arch Linux | Ubuntu / Debian | macOS |
 |---|---|---|---|
 | **SuperCollider** ≥ 3.12 | `sudo pacman -S supercollider` | `sudo apt install supercollider` | `brew install supercollider` |
 | **sc3-plugins** | `sudo pacman -S sc3-plugins` | `sudo apt install sc3-plugins` | [GitHub Releases](https://github.com/supercollider/sc3-plugins/releases) |
 
-> **sc3-plugins is mandatory.** The `LorenzL` UGen (chaotic oscillator) lives there.
-
-### Recommended (Arch / PipeWire)
-
-```bash
-# Low-latency PipeWire quantum (256 frames ≈ 5.3 ms at 48 kHz)
-# Add to /etc/pipewire/pipewire.conf.d/99-lowlatency.conf:
-context.properties = {
-    default.clock.quantum     = 256
-    default.clock.min-quantum = 128
-}
-
-# Real-time privileges — add your user to the 'realtime' group:
-sudo usermod -aG realtime $USER
-# Then log out and back in.
-```
-
----
-
-## Getting Started
-
-### The Main Work (headless, recommended)
-
-```bash
-git clone https://github.com/frnkptrln/the-weaving-sound.git
-cd the-weaving-sound/the-weaving-sound
-chmod +x start.sh
-./start.sh
-```
-
-Press `Ctrl+C` to stop. The piece runs indefinitely — leave it overnight.
-
-See the [main work README](the-weaving-sound/README.md) for IDE instructions, signal flow, and technical details.
-
-### Running Sketches
-
-Open any `.scd` file from `sketch/` in the SuperCollider IDE, boot the server, select all and evaluate. The tracks start and stop themselves.
-
----
-
-## Repository Structure
-
-```
-the-weaving-sound/
-├── README.md                       ← You are here
-├── LICENSE
-├── sketch/                         ← Standalone sketches & tracks
-│   ├── sc_first.scd                   Acid techno toolkit (135 BPM)
-│   ├── sc_sec_tp.scd                  Dub-techno study (118 BPM)
-│   ├── sc_3_track1.scd                Dub + melody (118 BPM)
-│   ├── sc_3_track2.scd                "Kernel Panic" breakbeat (140 BPM)
-│   ├── sc_3_track3.scd                "Daemon" minimal techno (125 BPM)
-│   ├── sc_4_betonmembran.scd          "Betonmembran" hall study (118 BPM)
-│   └── sc_5_index_of_almost.scd       "Index of Almost" generative study (96 BPM)
-└── the-weaving-sound/              ← The generative main work
-    ├── README.md                      Technical deep-dive
-    ├── start.sh                       Headless launcher (bash)
-    └── src/
-        ├── main.scd                   Master boot process
-        ├── 01_synthdefs.scd           All SynthDef definitions (6 voices + FX)
-        ├── 02_fx_routing.scd          FX SynthDef, bus/group setup, ~startFxRouting
-        └── 03_weaver_logic.scd        Generative conductor, ~startWeaver
-```
+> **sc3-plugins is mandatory** for several UGens used by the project family.
 
 ---
 
 ## License
 
-Released into the sound under the **MIT License**.  
-Use it. Break it. Let it run for 72 hours unattended. That is what it was made for.
+Released into the sound under the **MIT License**.
 
 ---
 
