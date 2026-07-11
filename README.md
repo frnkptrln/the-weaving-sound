@@ -11,7 +11,11 @@ chaos into a grammar only machines remember.
 
 ## Overview
 
-**the-weaving-sound** is now structured as an **anthology of generative sound pieces** in [SuperCollider](https://supercollider.github.io/): multiple experiments, multiple conductors, one shared sonic language.
+**the-weaving-sound** is an **anthology of generative sound pieces** in [SuperCollider](https://supercollider.github.io/): multiple experiments, multiple conductors, one shared sonic language.
+
+The repository asks how systems become audible. Each curated piece connects a
+small generative mechanism to a perceptual question rather than merely presenting
+a synthesis technique.
 
 ---
 
@@ -37,6 +41,7 @@ chaos into a grammar only machines remember.
 | [`pieces/physical-lab/`](pieces/physical-lab/) | Physical Modelling Demo | Active |
 | [`pieces/software-synth-lab/`](pieces/software-synth-lab/) | Software-Synthesizer Demo | Active |
 | [`pieces/granular-drift/`](pieces/granular-drift/) | Granular-Synthese Demo | Active |
+| [`pieces/temporal-binding/`](pieces/temporal-binding/) | Chord ↔ arpeggio as a perceptual continuum | Study |
 
 ---
 
@@ -74,6 +79,9 @@ Across all pieces and conductors:
 
 This keeps experiments diverse while preserving compatibility and maintainability.
 
+The contracts are executable in [`core/`](core/). `temporal-binding` is the first
+piece to use both contracts directly.
+
 ---
 
 ## Getting Started
@@ -89,6 +97,16 @@ chmod +x start.sh
 ### Open sketches
 
 Open any `.scd` from `sketches/` in SuperCollider IDE, boot server, evaluate all.
+
+### Validate the repository
+
+```bash
+python scripts/validate_repo.py
+bash -n pieces/*/start.sh
+```
+
+These checks do not render audio. A final listening pass still requires a local
+SuperCollider installation and audio device.
 
 ---
 
