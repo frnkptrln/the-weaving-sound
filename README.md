@@ -11,7 +11,7 @@ chaos into a grammar only machines remember.
 
 ## Overview
 
-**the-weaving-sound** is an **anthology of generative sound pieces** in [SuperCollider](https://supercollider.github.io/): multiple experiments, multiple conductors, one shared sonic language.
+**the-weaving-sound** is an **anthology of generative sound pieces**: multiple experiments, multiple conductors, one shared sonic language. Most pieces use [SuperCollider](https://supercollider.github.io/); deterministic offline renderers can join the collection when the form calls for a fixed recording or a different synthesis process.
 
 The repository asks how systems become audible. Each curated piece connects a
 small generative mechanism to a perceptual question rather than merely presenting
@@ -42,6 +42,7 @@ a synthesis technique.
 | [`pieces/software-synth-lab/`](pieces/software-synth-lab/) | Software-Synthesizer Demo | Active |
 | [`pieces/granular-drift/`](pieces/granular-drift/) | Granular-Synthese Demo | Active |
 | [`pieces/temporal-binding/`](pieces/temporal-binding/) | Chord ↔ arpeggio as a perceptual continuum | Study |
+| [`pieces/rooms-change-us/`](pieces/rooms-change-us/) | 92-second procedural sound room with unstable pulse, processed voice, and complete fade | Active |
 
 ---
 
@@ -94,6 +95,16 @@ chmod +x start.sh
 ./start.sh
 ```
 
+### Render rooms-change-us
+
+```bash
+cd pieces/rooms-change-us
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+bash start.sh
+```
+
 ### Open sketches
 
 Open any `.scd` from `sketches/` in SuperCollider IDE, boot server, evaluate all.
@@ -117,7 +128,7 @@ SuperCollider installation and audio device.
 | **SuperCollider** ≥ 3.12 | `sudo pacman -S supercollider` | `sudo apt install supercollider` | `brew install supercollider` |
 | **sc3-plugins** | `sudo pacman -S sc3-plugins` | `sudo apt install sc3-plugins` | [GitHub Releases](https://github.com/supercollider/sc3-plugins/releases) |
 
-> **sc3-plugins is mandatory** for several UGens used by the project family.
+> **sc3-plugins is mandatory** for several UGens used by the project family. The Python-based `rooms-change-us` piece documents its own additional dependencies.
 
 ---
 

@@ -12,9 +12,17 @@ def main() -> int:
     for piece in pieces:
         if not piece.is_dir():
             continue
-        for relative in ("README.md", "start.sh", "src/main.scd"):
+        for relative in ("README.md", "start.sh"):
             if not (piece / relative).is_file():
                 failures.append(f"{piece.name}: missing {relative}")
+        source_entrypoints = (piece / "src/main.scd", piece / "src/render.py")
+        if not any(path.is_file() for path in source_entrypoints):
+            failures.append(
+                f"{piece.name}: missing supported source entrypoint "
+                "(src/main.scd or src/render.py)"
+            )
+        if (piece / "src/render.py").is_file() and not (piece / "requirements.txt").is_file():
+            failures.append(f"{piece.name}: Python renderer is missing requirements.txt")
         launcher = piece / "start.sh"
         if launcher.is_file():
             text = launcher.read_text()
