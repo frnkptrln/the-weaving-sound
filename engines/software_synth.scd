@@ -8,6 +8,8 @@ SynthDef(\eng_software_poly, {
     sig = MoogFF.ar(sig, cutoff.clip(120, 14000), 2.1);
     sig = Splay.ar([sig, DelayC.ar(sig,0.03,0.011)], spread: 0.35);
     env = EnvGen.kr(Env.adsr(0.02,0.15,0.68,1.5), gate, doneAction: 2);
-    Out.ar(out, Pan2.ar(sig * env * amp, pan));
+    // Splay is already stereo. Balance2 preserves two-channel output.
+    sig = Balance2.ar(sig[0], sig[1], pan);
+    Out.ar(out, sig * env * amp);
 }).add;
 )
