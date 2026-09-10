@@ -8,15 +8,15 @@ Use --keep-renders DIR to retain the WAV files and process logs for inspection.
 from __future__ import annotations
 
 import argparse
-from array import array
 import math
 import os
 from pathlib import Path
 import shutil
-import struct
 import subprocess
 import sys
 import tempfile
+
+from audio_file import read_float_wav
 
 ROOT = Path(__file__).resolve().parents[1]
 SAMPLE_RATE = 44100
@@ -42,40 +42,6 @@ def run(command: list[str], scratch: Path, env: dict[str, str], timeout: int) ->
         raise RuntimeError(f"{command[0]} failed ({result.returncode}):\n{result.stdout[-6000:]}")
     if Path(command[0]).name == "sclang" and "WEAVING_AUDIO_SCORES_READY" not in result.stdout:
         raise RuntimeError("sclang exited before completing the validation scores")
-
-
-def read_float_wav(path: Path) -> tuple[int, int, array]:
-    """Read scsynth's IEEE float WAV using only the standard library."""
-    with path.open("rb") as handle:
-        header = handle.read(12)
-        if header[:4] != b"RIFF" or header[8:] != b"WAVE":
-            raise ValueError(f"{path.name}: expected RIFF/WAVE")
-        fmt = data = None
-        while chunk_header := handle.read(8):
-            if len(chunk_header) != 8:
-                raise ValueError(f"{path.name}: truncated WAV chunk")
-            kind, size = struct.unpack("<4sI", chunk_header)
-            chunk = handle.read(size)
-            if len(chunk) != size:
-                raise ValueError(f"{path.name}: truncated WAV data")
-            if kind == b"fmt ":
-                fmt = chunk
-            elif kind == b"data":
-                data = chunk
-            if size % 2:
-                handle.read(1)
-    if fmt is None or data is None:
-        raise ValueError(f"{path.name}: missing format/audio data")
-    encoding, channels, rate, _, _, bits = struct.unpack_from("<HHIIHH", fmt)
-    if encoding == 0xFFFE and len(fmt) >= 40:
-        encoding = struct.unpack_from("<H", fmt, 24)[0]
-    if encoding != 3 or bits != 32:
-        raise ValueError(f"{path.name}: expected 32-bit float WAV")
-    samples = array("f")
-    samples.frombytes(data)
-    if sys.byteorder != "little":
-        samples.byteswap()
-    return channels, rate, samples
 
 
 def check_audio(path: Path, duration: float, gate: float) -> str:

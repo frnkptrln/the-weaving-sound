@@ -15,14 +15,21 @@ def main() -> int:
         for relative in ("README.md", "start.sh"):
             if not (piece / relative).is_file():
                 failures.append(f"{piece.name}: missing {relative}")
-        source_entrypoints = (piece / "src/main.scd", piece / "src/render.py")
+        source_entrypoints = (
+            piece / "src/main.scd", piece / "src/render.py", piece / "src/score.scd"
+        )
         if not any(path.is_file() for path in source_entrypoints):
             failures.append(
                 f"{piece.name}: missing supported source entrypoint "
-                "(src/main.scd or src/render.py)"
+                "(src/main.scd, src/render.py, or src/score.scd)"
             )
         if (piece / "src/render.py").is_file() and not (piece / "requirements.txt").is_file():
             failures.append(f"{piece.name}: Python renderer is missing requirements.txt")
+        if (piece / "src/score.scd").is_file() and (piece / "README.md").is_file():
+            readme = (piece / "README.md").read_text()
+            for section in REQUIRED_DOC_SECTIONS:
+                if section not in readme:
+                    failures.append(f"{piece.name}: missing {section}")
         launcher = piece / "start.sh"
         if launcher.is_file():
             text = launcher.read_text()

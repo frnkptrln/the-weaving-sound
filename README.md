@@ -42,6 +42,8 @@ a synthesis technique.
 | [`pieces/software-synth-lab/`](pieces/software-synth-lab/) | Software-Synthesizer Demo | Active |
 | [`pieces/granular-drift/`](pieces/granular-drift/) | Granular-Synthese Demo | Active |
 | [`pieces/temporal-binding/`](pieces/temporal-binding/) | Chord ↔ arpeggio; interactive study and 64-second offline render | Study |
+| [`pieces/phase-weave/`](pieces/phase-weave/) | 72-second string loops: shared pulse, displacement, reunion | Study |
+| [`pieces/spectral-memory/`](pieces/spectral-memory/) | 80-second chime: harmonic object, metallic fragments, altered return | Active |
 | [`pieces/rooms-change-us/`](pieces/rooms-change-us/) | 92-second procedural sound room with unstable pulse, processed voice, and complete fade | Active |
 
 ---
@@ -106,6 +108,23 @@ Creates a 64-second stereo WAV in `pieces/temporal-binding/renders/`. This uses
 SuperCollider's offline renderer and needs no audio device or sc3-plugins.
 See the [listening study](pieces/temporal-binding/) for its form and live controls.
 
+### Render phase-weave and spectral-memory
+
+```bash
+python3 scripts/render_piece.py phase-weave spectral-memory
+```
+
+These two complete compositions use stock SuperCollider synthesis and need no
+audio device. The shared renderer writes a 48 kHz stereo, 24-bit WAV into each
+piece's `renders/` directory, plus MP3 when `ffmpeg` is installed. It also saves
+the exact OSC score and a JSON report with duration, levels, and the score hash.
+Floating-point audio is checked for invalid samples, over-range peaks, and a
+silent final second before conversion to the delivery format. Existing render
+files are replaced only after the new run passes its checks.
+
+For a single destination, append `--output-dir /path/to/listening-folder`.
+Python 3.10+ is required; no third-party Python packages are needed.
+
 ### Render rooms-change-us
 
 ```bash
@@ -124,6 +143,7 @@ Open any `.scd` from `sketches/` in SuperCollider IDE, boot server, evaluate all
 
 ```bash
 python scripts/validate_repo.py
+python -m unittest discover -s tests -v
 for script in pieces/*/*.sh; do bash -n "$script" || exit; done
 ```
 
@@ -138,9 +158,10 @@ python3 scripts/validate_audio.py --keep-renders renders/audio-validation
 
 The audio checks compile curated SuperCollider files and render each shared and
 classic voice plus the master FX. They check stereo routing, finite samples,
-headroom, and release tails. CI runs both structural and audio checks. These are
-bounded engine checks; they do not exercise the classic conductor's hours-long
-form or the interactive controls on a real audio device.
+headroom, and release tails. CI also renders phase-weave and spectral-memory in
+full and validates their resulting audio. The checks are bounded; they do not
+exercise the classic conductor's hours-long form or the interactive controls on a
+real audio device.
 
 ---
 
@@ -151,7 +172,7 @@ form or the interactive controls on a real audio device.
 | **SuperCollider** ≥ 3.12 | `sudo pacman -S supercollider` | `sudo apt install supercollider` | `brew install supercollider` |
 | **sc3-plugins** | `sudo pacman -S sc3-plugins` | `sudo apt install sc3-plugins` | [GitHub Releases](https://github.com/supercollider/sc3-plugins/releases) |
 
-> **sc3-plugins is required for `digital-lab`** (`Decimator`) and the complete audio validation. `weaving-classic` and `temporal-binding` use standard SuperCollider UGens. The Python-based `rooms-change-us` piece documents its own additional dependencies.
+> **sc3-plugins is required for `digital-lab`** (`Decimator`) and the complete audio validation. `weaving-classic`, `temporal-binding`, `phase-weave`, and `spectral-memory` use standard SuperCollider UGens. The Python-based `rooms-change-us` piece documents its own additional dependencies.
 
 ---
 

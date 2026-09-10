@@ -13,6 +13,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: python scripts/validate_repo.py
+      - run: python -m unittest discover -s tests -v
       - run: |
           for script in pieces/*/*.sh; do
             bash -n "$script" || exit
@@ -31,3 +32,5 @@ jobs:
           sudo apt-get install -y --no-install-recommends supercollider-language supercollider-server sc3-plugins
       - name: Compile and render without audio hardware
         run: python scripts/validate_audio.py
+      - name: Render complete finite scores and validate their audio
+        run: python scripts/render_piece.py phase-weave spectral-memory
