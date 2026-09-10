@@ -22,7 +22,7 @@ At its core is a **state machine** — *the Conductor* — that breathes through
 
 - **Sub-bass drone** — multi-partial sine bed with slow formant animation (Resonz filters modulated by LFNoise2)
 - **Karplus-Strong strings** — physical-model plucks as sparse melodic events; pitch drawn from an A-minor modal vocabulary
-- **Granular cloud** — GrainNoise with per-grain pan randomisation; band-pass centre-frequency swept by nested LFOs
+- **Granular cloud** — white noise granulated by GrainIn with per-grain pan randomisation; band-pass centre-frequency swept by nested LFOs
 - **Lorenz chaos glitches** — the classic strange attractor (σ=10, ρ=28, β=8/3) maps its output to frequency, producing unrepeatable micro-events
 - **Dub-techno pulse** — pitch-envelope kick with transient click; pattern humanised via micro-timing offsets of ±0.9%
 - **Shimmer pad** — six detuned sine partials with independent amplitude LFOs
@@ -79,6 +79,7 @@ the-weaving-sound/
 
 ## Technical Notes
 
+- The classic piece uses SuperCollider's standard UGens, including GrainIn and LorenzL; it does not require sc3-plugins.
 - The master FX synth is instantiated in the `~fxGroup` (which is ordered *after* `~sourceGroup`), guaranteeing sources always render before effects in the scsynth node tree.
 - All `.wait` calls in the generative logic execute inside Routines on `TempoClock.default` — never in raw sclang evaluation order.
 - `s.sync` is called at each critical transition in `main.scd` to prevent race conditions between SynthDef compilation and Synth instantiation.

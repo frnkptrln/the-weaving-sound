@@ -1,8 +1,10 @@
 (
+var projectDir = thisProcess.nowExecutingPath.dirname.dirname.dirname.dirname;
+
 "[software-synth-lab] booting".postln;
 
 s.waitForBoot {
-    (thisProcess.nowExecutingPath.dirname.dirname.dirname.dirname ++ "/engines/software_synth.scd").load;
+    (projectDir +/+ "engines/software_synth.scd").load;
     s.sync;
 
     TempoClock.default.tempo = 128/60;

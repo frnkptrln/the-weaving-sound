@@ -41,7 +41,9 @@ a synthesis technique.
 | [`pieces/physical-lab/`](pieces/physical-lab/) | Physical Modelling Demo | Active |
 | [`pieces/software-synth-lab/`](pieces/software-synth-lab/) | Software-Synthesizer Demo | Active |
 | [`pieces/granular-drift/`](pieces/granular-drift/) | Granular-Synthese Demo | Active |
-| [`pieces/temporal-binding/`](pieces/temporal-binding/) | Chord ↔ arpeggio as a perceptual continuum | Study |
+| [`pieces/temporal-binding/`](pieces/temporal-binding/) | Chord ↔ arpeggio; interactive study and 64-second offline render | Study |
+| [`pieces/phase-weave/`](pieces/phase-weave/) | 72-second string loops: shared pulse, displacement, reunion | Study |
+| [`pieces/spectral-memory/`](pieces/spectral-memory/) | 80-second chime: harmonic object, metallic fragments, altered return | Active |
 | [`pieces/rooms-change-us/`](pieces/rooms-change-us/) | 92-second procedural sound room with unstable pulse, processed voice, and complete fade | Active |
 
 ---
@@ -80,8 +82,9 @@ Across all pieces and conductors:
 
 This keeps experiments diverse while preserving compatibility and maintainability.
 
-The contracts are executable in [`core/`](core/). `temporal-binding` is the first
-piece to use both contracts directly.
+The macro and metadata contracts are executable in [`core/`](core/).
+`temporal-binding` uses both directly. Shared lifecycle and routing helpers remain
+planned; the classic piece currently owns its routing and conductor lifecycle.
 
 ---
 
@@ -94,6 +97,33 @@ cd pieces/weaving-classic
 chmod +x start.sh
 ./start.sh
 ```
+
+### Render temporal-binding
+
+```bash
+bash pieces/temporal-binding/render.sh
+```
+
+Creates a 64-second stereo WAV in `pieces/temporal-binding/renders/`. This uses
+SuperCollider's offline renderer and needs no audio device or sc3-plugins.
+See the [listening study](pieces/temporal-binding/) for its form and live controls.
+
+### Render phase-weave and spectral-memory
+
+```bash
+python3 scripts/render_piece.py phase-weave spectral-memory
+```
+
+These two complete compositions use stock SuperCollider synthesis and need no
+audio device. The shared renderer writes a 48 kHz stereo, 24-bit WAV into each
+piece's `renders/` directory, plus MP3 when `ffmpeg` is installed. It also saves
+the exact OSC score and a JSON report with duration, levels, and the score hash.
+Floating-point audio is checked for invalid samples, over-range peaks, and a
+silent final second before conversion to the delivery format. Existing render
+files are replaced only after the new run passes its checks.
+
+For a single destination, append `--output-dir /path/to/listening-folder`.
+Python 3.10+ is required; no third-party Python packages are needed.
 
 ### Render rooms-change-us
 
@@ -113,11 +143,25 @@ Open any `.scd` from `sketches/` in SuperCollider IDE, boot server, evaluate all
 
 ```bash
 python scripts/validate_repo.py
-bash -n pieces/*/start.sh
+python -m unittest discover -s tests -v
+for script in pieces/*/*.sh; do bash -n "$script" || exit; done
 ```
 
-These checks do not render audio. A final listening pass still requires a local
-SuperCollider installation and audio device.
+For language compilation, macro checks, and actual synthesis without an audio
+device, install SuperCollider and sc3-plugins, then run:
+
+```bash
+python3 scripts/validate_audio.py
+# Optional: retain the short WAVs and logs for inspection.
+python3 scripts/validate_audio.py --keep-renders renders/audio-validation
+```
+
+The audio checks compile curated SuperCollider files and render each shared and
+classic voice plus the master FX. They check stereo routing, finite samples,
+headroom, and release tails. CI also renders phase-weave and spectral-memory in
+full and validates their resulting audio. The checks are bounded; they do not
+exercise the classic conductor's hours-long form or the interactive controls on a
+real audio device.
 
 ---
 
@@ -128,7 +172,7 @@ SuperCollider installation and audio device.
 | **SuperCollider** ≥ 3.12 | `sudo pacman -S supercollider` | `sudo apt install supercollider` | `brew install supercollider` |
 | **sc3-plugins** | `sudo pacman -S sc3-plugins` | `sudo apt install sc3-plugins` | [GitHub Releases](https://github.com/supercollider/sc3-plugins/releases) |
 
-> **sc3-plugins is mandatory** for several UGens used by the project family. The Python-based `rooms-change-us` piece documents its own additional dependencies.
+> **sc3-plugins is required for `digital-lab`** (`Decimator`) and the complete audio validation. `weaving-classic`, `temporal-binding`, `phase-weave`, and `spectral-memory` use standard SuperCollider UGens. The Python-based `rooms-change-us` piece documents its own additional dependencies.
 
 ---
 

@@ -1,8 +1,10 @@
 (
+var projectDir = thisProcess.nowExecutingPath.dirname.dirname.dirname.dirname;
+
 "[granular-drift] booting".postln;
 
 s.waitForBoot {
-    (thisProcess.nowExecutingPath.dirname.dirname.dirname.dirname ++ "/pieces/weaving-classic/src/01_synthdefs.scd").load;
+    (projectDir +/+ "pieces/weaving-classic/src/01_synthdefs.scd").load;
     s.sync;
 
     ~cloud = Synth(\granular_cloud, [

@@ -1,8 +1,10 @@
 (
+var projectDir = thisProcess.nowExecutingPath.dirname.dirname.dirname.dirname;
+
 "[subtractive-lab] booting".postln;
 
 s.waitForBoot {
-    (thisProcess.nowExecutingPath.dirname.dirname.dirname.dirname ++ "/engines/subtractive.scd").load;
+    (projectDir +/+ "engines/subtractive.scd").load;
     s.sync;
 
     TempoClock.default.tempo = 124/60;
