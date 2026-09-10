@@ -1,8 +1,10 @@
 (
+var projectDir = thisProcess.nowExecutingPath.dirname.dirname.dirname.dirname;
+
 "[digital-lab] booting".postln;
 
 s.waitForBoot {
-    (thisProcess.nowExecutingPath.dirname.dirname.dirname.dirname ++ "/engines/digital.scd").load;
+    (projectDir +/+ "engines/digital.scd").load;
     s.sync;
 
     TempoClock.default.tempo = 110/60;

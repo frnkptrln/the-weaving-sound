@@ -1,8 +1,10 @@
 (
+var projectDir = thisProcess.nowExecutingPath.dirname.dirname.dirname.dirname;
+
 "[physical-lab] booting".postln;
 
 s.waitForBoot {
-    (thisProcess.nowExecutingPath.dirname.dirname.dirname.dirname ++ "/engines/physical.scd").load;
+    (projectDir +/+ "engines/physical.scd").load;
     s.sync;
 
     TempoClock.default.tempo = 90/60;

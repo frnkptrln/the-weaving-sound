@@ -1,9 +1,10 @@
 (
+var projectDir = thisProcess.nowExecutingPath.dirname.dirname.dirname.dirname;
+
 "[fm-pressure] booting".postln;
 
 s.waitForBoot {
-    thisProcess.nowExecutingPath.dirname.dirname.dirname.dirname.asString.postln;
-    (thisProcess.nowExecutingPath.dirname.dirname.dirname.dirname ++ "/engines/fm.scd").load;
+    (projectDir +/+ "engines/fm.scd").load;
     s.sync;
 
     TempoClock.default.tempo = 122/60;

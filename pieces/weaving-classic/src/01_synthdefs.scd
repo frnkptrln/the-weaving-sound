@@ -9,8 +9,8 @@
 //    2. void_pad       — shimmer pad, 6 detuned partials (gate-sustained)
 //    3. void_pulse     — dub-techno sub-kick (one-shot)
 //    4. thread_pluck   — Karplus-Strong physical model (one-shot)
-//    5. chaos_glitch   — Lorenz attractor micro-event (one-shot, needs sc3-plugins)
-//    6. granular_cloud — GrainNoise texture (gate-sustained)
+//    5. chaos_glitch   — Lorenz attractor micro-event (one-shot)
+//    6. granular_cloud — Granulated white-noise texture (gate-sustained)
 // =============================================================
 
 (
@@ -169,7 +169,7 @@ SynthDef(\thread_pluck, {
 //  The Lorenz strange attractor (σ=10, ρ=28, β=8/3) drives
 //  pitch — unpredictable, short, violent micro-events.
 //
-//  *** Requires sc3-plugins (LorenzL UGen) ***
+//  LorenzL is included in SuperCollider's standard UGens.
 //
 //  LorenzL.ar(freq, s, r, b, h, xi, yi, zi)
 //    freq  — integration rate (Hz); higher = faster chaos evolution
@@ -213,7 +213,7 @@ SynthDef(\chaos_glitch, {
 
 // ─────────────────────────────────────────────────────────────
 //  6. GRANULAR CLOUD
-//  GrainNoise with per-grain random panning and band-pass
+//  White noise granulated with per-grain random panning and band-pass
 //  filtering whose centre frequency is swept by nested LFOs.
 //  Dissolves the boundary between noise and texture.
 // ─────────────────────────────────────────────────────────────
@@ -232,7 +232,7 @@ SynthDef(\granular_cloud, {
     panMod      = LFNoise2.kr(0.4);
 
     // Stereo grain cloud (numChannels = 2)
-    sig = GrainNoise.ar(2, trig, grainDurMod, panMod);
+    sig = GrainIn.ar(2, trig, grainDurMod, WhiteNoise.ar, panMod);
 
     // Band-pass filter whose centre frequency wanders over time
     //   Outer LFNoise1 modulates the inner LFNoise2's speed
