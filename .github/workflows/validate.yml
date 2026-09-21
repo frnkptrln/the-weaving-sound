@@ -34,3 +34,9 @@ jobs:
         run: python scripts/validate_audio.py
       - name: Render complete finite scores and validate their audio
         run: python scripts/render_piece.py phase-weave spectral-memory
+      - name: Install the remaining renderer dependencies for the listening test
+        run: |
+          sudo apt-get install -y --no-install-recommends espeak
+          python -m pip install -r pieces/rooms-change-us/requirements.txt
+      - name: Listening test, every piece against manifest.json
+        run: python -m unittest -v tests.test_listening

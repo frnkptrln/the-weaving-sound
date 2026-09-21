@@ -1,0 +1,293 @@
+{
+  "schema": 1,
+  "generated_by": "python3 scripts/build_manifest.py",
+  "generated_with": {
+    "platform": "Linux-x86_64",
+    "os": "Ubuntu 24.04.4 LTS",
+    "python": "3.11.15",
+    "sclang": "sclang 3.13.0 (Built from  '' [na])",
+    "scsynth": "scsynth 3.13.0 (Built from  '' [na])",
+    "espeak": "eSpeak text-to-speech: 1.48.15  16.Apr.15  Data at: /usr/lib/x86_64-linux-gnu/espeak-data",
+    "numpy": "2.4.6",
+    "scipy": "1.17.1",
+    "soundfile": "0.14.0"
+  },
+  "pieces": [
+    {
+      "name": "digital-lab",
+      "status": "piece",
+      "focus": "Digitale Klangsynthese Demo",
+      "kind": "interactive",
+      "render_command": null,
+      "render_output": null,
+      "documented_duration_seconds": null,
+      "sources": [
+        "pieces/digital-lab/src/main.scd",
+        "engines/digital.scd"
+      ],
+      "random_ugens": {
+        "engines/digital.scd": [
+          "LFNoise1"
+        ]
+      },
+      "seeded": false,
+      "render": null
+    },
+    {
+      "name": "fm-pressure",
+      "status": "piece",
+      "focus": "FM-Synthese Demo",
+      "kind": "interactive",
+      "render_command": null,
+      "render_output": null,
+      "documented_duration_seconds": null,
+      "sources": [
+        "pieces/fm-pressure/src/main.scd",
+        "engines/fm.scd"
+      ],
+      "random_ugens": {},
+      "seeded": false,
+      "render": null
+    },
+    {
+      "name": "granular-drift",
+      "status": "piece",
+      "focus": "Granular-Synthese Demo",
+      "kind": "interactive",
+      "render_command": null,
+      "render_output": null,
+      "documented_duration_seconds": null,
+      "sources": [
+        "pieces/granular-drift/src/main.scd",
+        "pieces/weaving-classic/src/01_synthdefs.scd"
+      ],
+      "random_ugens": {
+        "pieces/weaving-classic/src/01_synthdefs.scd": [
+          "ExpRand",
+          "IRand",
+          "LFNoise0",
+          "LFNoise1",
+          "LFNoise2",
+          "Rand",
+          "WhiteNoise"
+        ]
+      },
+      "seeded": false,
+      "render": null
+    },
+    {
+      "name": "phase-weave",
+      "status": "study",
+      "focus": "72-second string loops: shared pulse, displacement, reunion",
+      "kind": "finite-score",
+      "render_command": "python3 scripts/render_piece.py phase-weave",
+      "render_output": "pieces/phase-weave/renders/phase-weave.wav",
+      "documented_duration_seconds": 72,
+      "sources": [
+        "pieces/phase-weave/src/score.scd",
+        "core/metadata.scd",
+        "engines/physical.scd"
+      ],
+      "random_ugens": {
+        "engines/physical.scd": [
+          "WhiteNoise"
+        ]
+      },
+      "seeded": false,
+      "render": {
+        "sample_rate": 48000,
+        "channels": 2,
+        "bits": 24,
+        "duration_seconds": 72.001,
+        "peak_dbfs": -6.3,
+        "rms_dbfs": -31.88,
+        "tail_peak_dbfs": -200.0,
+        "reproducible": false,
+        "pcm_sha256": null,
+        "score_sha256": "9fa6b2ea19077af7489c981a72cdecc7d9a432d9a4ad0fbab2b0916f4475d663",
+        "renders_compared": 2
+      }
+    },
+    {
+      "name": "physical-lab",
+      "status": "piece",
+      "focus": "Physical Modelling Demo",
+      "kind": "interactive",
+      "render_command": null,
+      "render_output": null,
+      "documented_duration_seconds": null,
+      "sources": [
+        "pieces/physical-lab/src/main.scd",
+        "engines/physical.scd"
+      ],
+      "random_ugens": {
+        "engines/physical.scd": [
+          "WhiteNoise"
+        ]
+      },
+      "seeded": false,
+      "render": null
+    },
+    {
+      "name": "rooms-change-us",
+      "status": "piece",
+      "focus": "92-second procedural sound room with unstable pulse, processed voice, and complete fade",
+      "kind": "offline-render",
+      "render_command": "bash pieces/rooms-change-us/start.sh",
+      "render_output": "pieces/rooms-change-us/renders/rooms-change-us.wav",
+      "documented_duration_seconds": 92,
+      "sources": [
+        "pieces/rooms-change-us/src/render.py"
+      ],
+      "random_ugens": {},
+      "seeded": true,
+      "render": {
+        "sample_rate": 44100,
+        "channels": 2,
+        "bits": 24,
+        "duration_seconds": 92.0,
+        "peak_dbfs": -1.11,
+        "rms_dbfs": -21.13,
+        "tail_peak_dbfs": -200.0,
+        "reproducible": true,
+        "pcm_sha256": "c398e563dfb9a400827fd359a8930f4e6e6c0fc6c5f366bb37b1ea93120fa951",
+        "score_sha256": null,
+        "renders_compared": 2
+      }
+    },
+    {
+      "name": "software-synth-lab",
+      "status": "piece",
+      "focus": "Software-Synthesizer Demo",
+      "kind": "interactive",
+      "render_command": null,
+      "render_output": null,
+      "documented_duration_seconds": null,
+      "sources": [
+        "pieces/software-synth-lab/src/main.scd",
+        "engines/software_synth.scd"
+      ],
+      "random_ugens": {},
+      "seeded": false,
+      "render": null
+    },
+    {
+      "name": "spectral-memory",
+      "status": "piece",
+      "focus": "80-second chime: harmonic object, metallic fragments, altered return",
+      "kind": "finite-score",
+      "render_command": "python3 scripts/render_piece.py spectral-memory",
+      "render_output": "pieces/spectral-memory/renders/spectral-memory.wav",
+      "documented_duration_seconds": 80,
+      "sources": [
+        "pieces/spectral-memory/src/score.scd",
+        "core/macros.scd",
+        "core/metadata.scd"
+      ],
+      "random_ugens": {
+        "pieces/spectral-memory/src/score.scd": [
+          "WhiteNoise"
+        ]
+      },
+      "seeded": true,
+      "render": {
+        "sample_rate": 48000,
+        "channels": 2,
+        "bits": 24,
+        "duration_seconds": 80.001,
+        "peak_dbfs": -8.04,
+        "rms_dbfs": -26.48,
+        "tail_peak_dbfs": -200.0,
+        "reproducible": true,
+        "pcm_sha256": "719c3cd52423d5170cd3f3b2e19084734a4db1543565fcc5cb24b5fbc7aff6b1",
+        "score_sha256": "3fb5f9357a161c650bea3ed6e68f2ed4b4cb2d4ef9b9c4f546179442ed76e157",
+        "renders_compared": 2
+      }
+    },
+    {
+      "name": "subtractive-lab",
+      "status": "piece",
+      "focus": "Subtraktive Synthese Demo",
+      "kind": "interactive",
+      "render_command": null,
+      "render_output": null,
+      "documented_duration_seconds": null,
+      "sources": [
+        "pieces/subtractive-lab/src/main.scd",
+        "engines/subtractive.scd"
+      ],
+      "random_ugens": {
+        "engines/subtractive.scd": [
+          "WhiteNoise"
+        ]
+      },
+      "seeded": false,
+      "render": null
+    },
+    {
+      "name": "temporal-binding",
+      "status": "study",
+      "focus": "Chord ↔ arpeggio; interactive study and 64-second offline render",
+      "kind": "offline-render",
+      "render_command": "bash pieces/temporal-binding/render.sh",
+      "render_output": "pieces/temporal-binding/renders/temporal-binding.wav",
+      "documented_duration_seconds": 64,
+      "sources": [
+        "pieces/temporal-binding/src/render.scd",
+        "core/macros.scd",
+        "engines/subtractive.scd",
+        "pieces/temporal-binding/src/study.scd"
+      ],
+      "random_ugens": {
+        "engines/subtractive.scd": [
+          "WhiteNoise"
+        ]
+      },
+      "seeded": false,
+      "render": {
+        "sample_rate": 48000,
+        "channels": 2,
+        "bits": 24,
+        "duration_seconds": 64.001,
+        "peak_dbfs": -8.09,
+        "rms_dbfs": -24.18,
+        "tail_peak_dbfs": -200.0,
+        "reproducible": false,
+        "pcm_sha256": null,
+        "score_sha256": "f700ace881f16a16ae18a7d674e25af5e0cac90a2acc9e1ec6927d1934e56871",
+        "renders_compared": 2
+      }
+    },
+    {
+      "name": "weaving-classic",
+      "status": "piece",
+      "focus": "Original long-form conductor work (Void → Emergence → Weaving → Chaos → Collapse)",
+      "kind": "interactive",
+      "render_command": null,
+      "render_output": null,
+      "documented_duration_seconds": null,
+      "sources": [
+        "pieces/weaving-classic/src/main.scd",
+        "pieces/weaving-classic/src/01_synthdefs.scd",
+        "pieces/weaving-classic/src/02_fx_routing.scd",
+        "pieces/weaving-classic/src/03_weaver_logic.scd"
+      ],
+      "random_ugens": {
+        "pieces/weaving-classic/src/01_synthdefs.scd": [
+          "ExpRand",
+          "IRand",
+          "LFNoise0",
+          "LFNoise1",
+          "LFNoise2",
+          "Rand",
+          "WhiteNoise"
+        ],
+        "pieces/weaving-classic/src/02_fx_routing.scd": [
+          "LFNoise1"
+        ]
+      },
+      "seeded": false,
+      "render": null
+    }
+  ]
+}
