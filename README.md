@@ -170,16 +170,21 @@ python -m unittest -v tests.test_listening
 
 Each piece gets one test: stereo, documented duration, not silent, no
 clipping, an ending in silence, and a matching hash (or, for varying audio,
-levels within tolerance and a matching score hash). Interactive pieces without
-an offline render path are skipped and say so, as are pieces whose renderer's
-tools are missing. Rerun the manifest build after an intended change so the
-test records the new hash. `rooms-change-us` needs `espeak` and its Python
+levels within tolerance and a matching score hash). The manifest also keeps
+per-second levels for every render. Interactive pieces without an offline
+render path are skipped and say so, as are pieces whose renderer's tools are
+missing. Rerun the manifest build after an intended change so the test records
+the new hash. `rooms-change-us` needs `espeak` and its exactly pinned Python
 packages; the SuperCollider pieces need `sclang` and `scsynth`. The test runs
 each piece's own render command, so temporal-binding and rooms-change-us
-write into their untracked `renders/` directories as they always do. Audio
-hashes are tied to the toolchain recorded in the manifest; a mismatch on a
-different SuperCollider, NumPy, SciPy, or espeak build is reported together
-with both environments.
+write into their untracked `renders/` directories as they always do.
+
+Audio hashes have a scope. scsynth renders reproduced their hashes on every
+machine tried, so theirs must match everywhere. NumPy renders differ in their
+last bits between CPU SIMD classes (AVX2 versus AVX-512, for instance), so the
+manifest records the class it was built on; on the same class the hash must
+match, on another the per-second levels must agree within 0.1 dB. A mismatch
+is reported together with both environments.
 
 [`docs/study-to-piece.md`](docs/study-to-piece.md) proposes what separates a
 study from a piece here, and what a piece needs before it is exported as MP3.

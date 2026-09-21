@@ -54,6 +54,12 @@ def render_entry(piece: listening.Piece, workdir: Path) -> dict:
         "pcm_sha256": first.pcm_sha256 if reproducible else None,
         "score_sha256": score_hashes[0],
         "renders_compared": 2,
+        # Per second: RMS per channel, then peak per channel, in dBFS, from the
+        # first render; and how far the second render strayed from it.
+        "seconds_columns": ["rms_left", "rms_right", "peak_left", "peak_right"],
+        "seconds": [list(row) for row in first.seconds],
+        "seconds_max_deviation_db": round(
+            listening.fingerprint_deviation(first.seconds, second.seconds), 3),
     }
 
 

@@ -28,6 +28,8 @@ README = ROOT / "README.md"
 MANIFEST = ROOT / "manifest.json"
 RENDER_TIMEOUT = 600
 SILENCE_DBFS = -200.0
+# Below this a one-second window counts as silent when fingerprints are compared.
+FINGERPRINT_FLOOR_DBFS = -80.0
 
 # README statuses map onto the two words the manifest uses.
 STATUS_WORDS = {"Active": "piece", "Study": "study"}
@@ -55,6 +57,7 @@ class Piece:
     sources: tuple[str, ...]
     random_ugens: dict[str, tuple[str, ...]]
     seeded: bool
+    hash_scope: str
 
     @property
     def entry(self) -> Path:
@@ -76,6 +79,7 @@ class Measurement:
     channel_rms_dbfs: tuple[float, ...]
     tail_peak_dbfs: float
     pcm_sha256: str
+    seconds: tuple[tuple[float, ...], ...]
 
 
 def dbfs(value: float) -> float:
@@ -146,11 +150,16 @@ def discover() -> list[Piece]:
             elif relative.endswith(".py"):
                 seeded = seeded or re.search(r"default_rng\(\s*\d+\s*\)", text) is not None
         duration = DOCUMENTED_DURATION.search(focus)
+        # scsynth has no CPU-specific code paths, so its audio hash held across
+        # every machine tried. NumPy dispatches sin, exp and tanh loops per CPU
+        # SIMD class, so a NumPy render's hash holds only within that class.
+        hash_scope = "toolchain" if entry.endswith(".scd") else "machine"
         pieces.append(Piece(
             name=name, status=status, focus=focus, kind=kind,
             render_command=command, render_output=output,
             documented_duration_seconds=int(duration.group(1)) if duration else None,
             sources=tuple(sources), random_ugens=random_ugens, seeded=seeded,
+            hash_scope=hash_scope,
         ))
     unlisted = sorted(set(rows) - {piece.name for piece in pieces})
     if unlisted:
@@ -253,6 +262,15 @@ def measure(path: Path, tail_seconds: float = 0.5) -> Measurement:
     peak = max((max(max(data), -min(data)) for data in per_channel if len(data)), default=0)
     tail = samples[-int(tail_seconds * rate) * channels:]
     tail_peak = max(max(tail), -min(tail)) if len(tail) else 0
+    # One row per second: RMS of each channel, then peak of each channel, in dBFS.
+    seconds = []
+    for second in range(frames // rate):
+        window = samples[second * rate * channels:(second + 1) * rate * channels]
+        parts = [window[channel::channels] for channel in range(channels)]
+        seconds.append(tuple(
+            [dbfs(math.sqrt(sum(map(operator.mul, part, part)) / len(part)) / full_scale)
+             for part in parts]
+            + [dbfs(max(max(part), -min(part)) / full_scale) for part in parts]))
     return Measurement(
         sample_rate=rate, channels=channels, bits=24,
         duration_seconds=round(frames / rate, 3),
@@ -261,7 +279,20 @@ def measure(path: Path, tail_seconds: float = 0.5) -> Measurement:
         channel_rms_dbfs=tuple(map(dbfs, rms)),
         tail_peak_dbfs=dbfs(tail_peak / full_scale),
         pcm_sha256=hashlib.sha256(raw).hexdigest(),
+        seconds=tuple(seconds),
     )
+
+
+def fingerprint_deviation(expected: list, actual: list) -> float:
+    """Largest per-second level difference in dB, treating quiet windows as silent."""
+    if len(expected) != len(actual):
+        return math.inf
+    largest = 0.0
+    for expected_row, actual_row in zip(expected, actual):
+        for left, right in zip(expected_row, actual_row):
+            largest = max(largest, abs(max(left, FINGERPRINT_FLOOR_DBFS)
+                                       - max(right, FINGERPRINT_FLOOR_DBFS)))
+    return largest
 
 
 def tool_version(command: list[str]) -> str | None:
@@ -287,11 +318,30 @@ def os_release() -> str | None:
     return platform.mac_ver()[0] or platform.win32_ver()[0] or None
 
 
+def cpu_model() -> str | None:
+    try:
+        for line in Path("/proc/cpuinfo").read_text().splitlines():
+            if line.startswith("model name"):
+                return line.split(":", 1)[1].strip()
+    except OSError:
+        pass
+    return platform.processor() or None
+
+
+NUMPY_SIMD_PROBE = """
+import numpy
+from numpy._core._multiarray_umath import __cpu_baseline__, __cpu_dispatch__, __cpu_features__
+print(" ".join(__cpu_baseline__) + " | "
+      + " ".join(target for target in __cpu_dispatch__ if __cpu_features__.get(target)))
+"""
+
+
 def environment() -> dict:
-    """The tools whose versions can change a render's hash."""
+    """The tools, and the CPU SIMD class, that can change a render's hash."""
     info = {
         "platform": f"{platform.system()}-{platform.machine()}",
         "os": os_release(),
+        "cpu": cpu_model(),
         "python": platform.python_version(),
         "sclang": tool_version(["sclang", "-v"]),
         "scsynth": tool_version(["scsynth", "-v"]),
@@ -302,4 +352,9 @@ def environment() -> dict:
             [sys.executable, "-c", f"import {module}; print({module}.__version__)"],
             stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, check=False)
         info[module] = probe.stdout.strip() or None
+    # NumPy's baseline and the dispatched SIMD targets this CPU enables. Renders
+    # made with different targets differ in their last bits.
+    probe = subprocess.run([sys.executable, "-c", NUMPY_SIMD_PROBE],
+                           stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, check=False)
+    info["numpy_simd"] = probe.stdout.strip() or None
     return info

@@ -27,6 +27,8 @@ CLIP_PEAK_DBFS = -0.1          # a peak at or above this counts as clipping
 TAIL_CEILING_DBFS = -80.0      # every piece documents an ending in silence
 PEAK_TOLERANCE_DB = 3.0        # for pieces whose audio varies between renders
 RMS_TOLERANCE_DB = 1.0
+FINGERPRINT_TOLERANCE_DB = 0.1  # per second, for reproducible audio on another CPU class
+FINGERPRINT_MARGIN_DB = 0.5     # added to twice the deviation the manifest build observed
 
 
 class ListeningTests(unittest.TestCase):
@@ -45,6 +47,14 @@ class ListeningTests(unittest.TestCase):
                     "Rerun scripts/build_manifest.py in the environment that should be the reference")
         return ("audio changed in the same toolchain the manifest was built with; "
                 "rerun scripts/build_manifest.py if the change is intended")
+
+    @staticmethod
+    def same_hash_scope(piece: listening.Piece) -> bool:
+        """Whether the recorded audio hash applies to this machine at all."""
+        if piece.hash_scope == "toolchain":
+            return True
+        recorded = MANIFEST["generated_with"].get("numpy_simd")
+        return recorded is not None and recorded == listening.environment().get("numpy_simd")
 
     def render_and_check(self, name: str) -> None:
         piece, entry = PIECES[name], ENTRIES[name]
@@ -84,15 +94,31 @@ class ListeningTests(unittest.TestCase):
         with self.subTest(check="score hash"):
             self.assertEqual(score_hash, expected["score_sha256"],
                              "the OSC score changed; rerun scripts/build_manifest.py if intended")
-        if expected["reproducible"]:
+        deviation = listening.fingerprint_deviation(expected["seconds"], list(actual.seconds))
+        if expected["reproducible"] and self.same_hash_scope(piece):
             with self.subTest(check="audio hash"):
                 self.assertEqual(actual.pcm_sha256, expected["pcm_sha256"], self.hash_advice())
+        elif expected["reproducible"]:
+            # Same audio on another CPU SIMD class differs only in its last bits.
+            print(f"[{name}] hash not compared: NumPy SIMD class differs from the manifest "
+                  f"({MANIFEST['generated_with'].get('numpy_simd')!r}); "
+                  f"checking per-second levels within {FINGERPRINT_TOLERANCE_DB} dB instead")
+            with self.subTest(check="per-second levels"):
+                self.assertLessEqual(deviation, FINGERPRINT_TOLERANCE_DB,
+                                     "levels changed; rerun scripts/build_manifest.py if intended")
+                self.assertAlmostEqual(actual.peak_dbfs, expected["peak_dbfs"],
+                                       delta=FINGERPRINT_TOLERANCE_DB)
+                self.assertAlmostEqual(actual.rms_dbfs, expected["rms_dbfs"],
+                                       delta=FINGERPRINT_TOLERANCE_DB)
         else:
+            tolerance = 2 * expected["seconds_max_deviation_db"] + FINGERPRINT_MARGIN_DB
             with self.subTest(check="levels within tolerance"):
                 self.assertAlmostEqual(actual.peak_dbfs, expected["peak_dbfs"],
                                        delta=PEAK_TOLERANCE_DB)
                 self.assertAlmostEqual(actual.rms_dbfs, expected["rms_dbfs"],
                                        delta=RMS_TOLERANCE_DB)
+                self.assertLessEqual(deviation, tolerance,
+                                     "a second strayed further than the manifest build observed")
 
 
 def _piece_test(name: str):
@@ -129,8 +155,10 @@ class ManifestTests(unittest.TestCase):
                     self.assertIn(render["reproducible"], (True, False))
                     if render["reproducible"]:
                         self.assertRegex(render["pcm_sha256"], r"^[0-9a-f]{64}$")
+                        self.assertEqual(render["seconds_max_deviation_db"], 0)
                     else:
                         self.assertIsNone(render["pcm_sha256"])
+                    self.assertEqual(len(render["seconds"]), int(render["duration_seconds"]))
                 else:
                     self.assertIsNone(render)
 
