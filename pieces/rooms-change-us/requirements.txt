@@ -1,3 +1,5 @@
-numpy>=1.26
-scipy>=1.12
-soundfile>=0.12
+# Exact versions: the audio hash recorded in manifest.json depends on them.
+# Change them together with a rerun of scripts/build_manifest.py.
+numpy==2.4.6
+scipy==1.17.1
+soundfile==0.14.0

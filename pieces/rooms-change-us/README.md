@@ -20,7 +20,7 @@ The sentence is treated as an acoustic memory rather than narration. The piece g
 
 Requirements:
 
-- Python 3.10+
+- Python 3.11+ (the pinned NumPy and SciPy need it)
 - `espeak`
 - Python packages from `requirements.txt`
 - optional: `ffmpeg` for MP3 output

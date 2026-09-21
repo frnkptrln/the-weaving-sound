@@ -142,6 +142,21 @@ class ManifestTests(unittest.TestCase):
                     self.assertTrue(piece.random_ugens and not piece.seeded,
                                     "audio varies without an unseeded random UGen to blame")
 
+    def test_reproducible_python_renderers_pin_their_packages(self):
+        # Regression: rooms-change-us rendered a different hash on CI because
+        # pip resolved newer NumPy and SciPy than the manifest was built with.
+        # A recorded audio hash is only meaningful with an exactly pinned toolchain.
+        for name, piece in PIECES.items():
+            render = ENTRIES[name]["render"]
+            requirements = piece.entry.parent.parent / "requirements.txt"
+            if not (render and render["reproducible"] and requirements.is_file()):
+                continue
+            with self.subTest(piece=name):
+                lines = [line.split("#")[0].strip() for line in requirements.read_text().splitlines()]
+                for requirement in filter(None, lines):
+                    self.assertRegex(requirement, r"^[A-Za-z0-9_.-]+==\S+$",
+                                     f"{name}: pin {requirement!r} exactly, the audio hash depends on it")
+
     def test_declared_status_agrees_with_readme(self):
         # Pieces that declare status through the metadata contract must match the README table.
         for name, piece in PIECES.items():
