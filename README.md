@@ -139,6 +139,11 @@ bash start.sh
 
 Open any `.scd` from `sketches/` in SuperCollider IDE, boot server, evaluate all.
 
+[`Lantern field`](sketches/lantern-field/) is a separate 96-second offline sketch:
+six chime clocks gradually find and lose a shared pulse. It uses Python/NumPy
+and includes an uncoupled listening reference, an onset score and numeric render
+checks. It awaits listening review before joining the curated pieces.
+
 ### Validate the repository
 
 ```bash
