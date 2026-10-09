@@ -147,6 +147,48 @@ python -m unittest discover -s tests -v
 for script in pieces/*/*.sh; do bash -n "$script" || exit; done
 ```
 
+### Listening test and render manifest
+
+[`manifest.json`](manifest.json) lists every piece with its status, render
+command, documented duration, the sources its renderer loads, and, for each
+offline render, the sample rate, channel count, measured duration, levels, and
+a content hash. It is generated, not written by hand:
+
+```bash
+python3 scripts/build_manifest.py
+```
+
+This renders each finite piece twice. When both renders are identical the
+audio hash is recorded; when they differ (unseeded noise in a shared engine),
+the manifest keeps the OSC score hash and the measured levels instead and says
+so. The listening test renders every piece again and checks the result against
+the manifest:
+
+```bash
+python -m unittest -v tests.test_listening
+```
+
+Each piece gets one test: stereo, documented duration, not silent, no
+clipping, an ending in silence, and a matching hash (or, for varying audio,
+levels within tolerance and a matching score hash). The manifest also keeps
+per-second levels for every render. Interactive pieces without an offline
+render path are skipped and say so, as are pieces whose renderer's tools are
+missing. Rerun the manifest build after an intended change so the test records
+the new hash. `rooms-change-us` needs `espeak` and its exactly pinned Python
+packages; the SuperCollider pieces need `sclang` and `scsynth`. The test runs
+each piece's own render command, so temporal-binding and rooms-change-us
+write into their untracked `renders/` directories as they always do.
+
+Audio hashes have a scope. scsynth renders reproduced their hashes on every
+machine tried, so theirs must match everywhere. NumPy renders differ in their
+last bits between CPU SIMD classes (AVX2 versus AVX-512, for instance), so the
+manifest records the class it was built on; on the same class the hash must
+match, on another the per-second levels must agree within 0.1 dB. A mismatch
+is reported together with both environments.
+
+[`docs/study-to-piece.md`](docs/study-to-piece.md) proposes what separates a
+study from a piece here, and what a piece needs before it is exported as MP3.
+
 For language compilation, macro checks, and actual synthesis without an audio
 device, install SuperCollider and sc3-plugins, then run:
 
@@ -159,7 +201,8 @@ python3 scripts/validate_audio.py --keep-renders renders/audio-validation
 The audio checks compile curated SuperCollider files and render each shared and
 classic voice plus the master FX. They check stereo routing, finite samples,
 headroom, and release tails. CI also renders phase-weave and spectral-memory in
-full and validates their resulting audio. The checks are bounded; they do not
+full, validates their resulting audio, and runs the listening test above for
+every piece with an offline render. The checks are bounded; they do not
 exercise the classic conductor's hours-long form or the interactive controls on a
 real audio device.
 

@@ -20,7 +20,7 @@ The sentence is treated as an acoustic memory rather than narration. The piece g
 
 Requirements:
 
-- Python 3.10+
+- Python 3.11+ (the pinned NumPy and SciPy need it)
 - `espeak`
 - Python packages from `requirements.txt`
 - optional: `ffmpeg` for MP3 output
@@ -38,6 +38,6 @@ Outputs are written to `renders/` and remain untracked.
 
 ## Design notes
 
-The renderer is deterministic (`seed=260803`) so the same composition can be reproduced and revised. It deliberately avoids a conventional song form: the pulse never settles into a beat, the voice appears only once, and the ending leaves several seconds of actual silence rather than stopping abruptly.
+The renderer is deterministic (`seed=260803`) so the same composition can be reproduced and revised. With the pinned packages the output is bit-identical on one machine; on a CPU with a different SIMD class (AVX2 versus AVX-512) NumPy's math loops round differently and the last bits change, which the repository's listening test allows for. It deliberately avoids a conventional song form: the pulse never settles into a beat, the voice appears only once, and the ending leaves several seconds of actual silence rather than stopping abruptly.
 
 A browser-native sister version lives in `a-house-in-conversation/rooms/afterimage/`. It preserves the form while allowing the available system voice and audio engine to become part of the room.
