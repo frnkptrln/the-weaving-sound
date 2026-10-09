@@ -19,7 +19,10 @@ jobs:
             bash -n "$script" || exit
           done
   audio:
-    runs-on: ubuntu-latest
+    # The recorded hashes are only meaningful with the toolchain they were built
+    # with (SuperCollider 3.13.0 from Ubuntu 24.04); ubuntu-latest moves to
+    # Ubuntu 26 from 19 October 2026.
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4

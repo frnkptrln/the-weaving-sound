@@ -238,6 +238,79 @@ def sha256_of(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+# OSC argument sizes in bytes for the fixed-width type tags; T F N I carry none.
+_OSC_FIXED = {"i": 4, "f": 4, "c": 4, "r": 4, "m": 4, "d": 8, "h": 8, "t": 8,
+              "T": 0, "F": 0, "N": 0, "I": 0}
+
+
+def _osc_padded(length: int) -> int:
+    return (length + 3) & ~3
+
+
+def _zero_osc_string(data: bytearray, start: int, end: int) -> int:
+    """Zero the padding after a NUL-terminated OSC string; return the next offset."""
+    terminator = data.index(0, start, end)
+    following = _osc_padded(terminator + 1 - start) + start
+    if following > end:
+        raise ValueError("OSC string runs past its element")
+    data[terminator:following] = bytes(following - terminator)
+    return following
+
+
+def _zero_osc_element(data: bytearray, start: int, end: int) -> None:
+    if data[start:start + 8] == b"#bundle\0":
+        offset = start + 16  # after the identifier and the time tag
+        while offset < end:
+            size = int.from_bytes(data[offset:offset + 4], "big", signed=True)
+            if size < 0 or offset + 4 + size > end:
+                raise ValueError("OSC bundle element runs past its bundle")
+            _zero_osc_element(data, offset + 4, offset + 4 + size)
+            offset += 4 + size
+        return
+    offset = _zero_osc_string(data, start, end)  # address
+    if offset >= end or data[offset] != ord(","):
+        return  # a message without type tags carries no arguments to walk
+    tags_start = offset + 1
+    offset = _zero_osc_string(data, offset, end)
+    tags = data[tags_start:data.index(0, tags_start, end)].decode("ascii")
+    for tag in tags:
+        if tag in _OSC_FIXED:
+            offset += _OSC_FIXED[tag]
+        elif tag in "sS":
+            offset = _zero_osc_string(data, offset, end)
+        elif tag == "b":
+            size = int.from_bytes(data[offset:offset + 4], "big", signed=True)
+            blob_end = offset + 4 + size
+            following = offset + 4 + _osc_padded(size)
+            if size < 0 or following > end:
+                raise ValueError("OSC blob runs past its element")
+            data[blob_end:following] = bytes(following - blob_end)
+            offset = following
+        else:
+            raise ValueError(f"unsupported OSC type tag {tag!r}")
+        if offset > end:
+            raise ValueError("OSC arguments run past their element")
+
+
+def score_sha256(path: Path) -> str:
+    """SHA-256 of a non-realtime OSC score with all OSC padding set to zero.
+
+    sclang does not clear the bytes that pad a blob (a SynthDef sent with
+    /d_recv) to a four-byte boundary, so they hold whatever was in memory:
+    the same score written on two machines can differ in exactly those bytes.
+    scsynth ignores padding; the hash should too, and keep everything else.
+    """
+    data = bytearray(path.read_bytes())
+    offset = 0
+    while offset < len(data):
+        size = int.from_bytes(data[offset:offset + 4], "big", signed=True)
+        if size <= 0 or offset + 4 + size > len(data):
+            raise ValueError(f"{path} is not a sequence of length-prefixed OSC bundles")
+        _zero_osc_element(data, offset + 4, offset + 4 + size)
+        offset += 4 + size
+    return hashlib.sha256(bytes(data)).hexdigest()
+
+
 def measure(path: Path, tail_seconds: float = 0.5) -> Measurement:
     """Level statistics and a content hash of a 24-bit PCM WAV file."""
     with wave.open(str(path), "rb") as handle:

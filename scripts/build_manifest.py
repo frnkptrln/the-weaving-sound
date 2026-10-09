@@ -34,7 +34,7 @@ def render_entry(piece: listening.Piece, workdir: Path) -> dict:
         output = listening.render(piece, directory)
         measurements.append(listening.measure(output))
         score = listening.score_path(piece, output)
-        score_hashes.append(listening.sha256_of(score) if score else None)
+        score_hashes.append(listening.score_sha256(score) if score else None)
     first, second = measurements
     reproducible = first.pcm_sha256 == second.pcm_sha256
     if score_hashes[0] != score_hashes[1]:

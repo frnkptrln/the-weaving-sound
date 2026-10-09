@@ -7,7 +7,6 @@ Requires Python 3.10+, sclang, scsynth; ffmpeg is optional for MP3.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import math
 import os
@@ -19,6 +18,7 @@ import tempfile
 import wave
 
 from audio_file import read_float_wav
+from listening import score_sha256
 
 ROOT = Path(__file__).resolve().parents[1]
 SAMPLE_RATE = 48000
@@ -106,7 +106,7 @@ def render(name: str, output_dir: Path | None = None) -> Path:
         wav_name = f"{name}.wav"
         report = export_audio(scratch / "float.wav", scratch / wav_name, duration)
         report["piece"] = name
-        report["score_sha256"] = hashlib.sha256((scratch / "score.osc").read_bytes()).hexdigest()
+        report["score_sha256"] = score_sha256(scratch / "score.osc")
         outputs = [wav_name, f"{name}.json", f"{name}.osc"]
         shutil.copyfile(scratch / "score.osc", scratch / outputs[2])
         report["mp3_created"] = shutil.which("ffmpeg") is not None
