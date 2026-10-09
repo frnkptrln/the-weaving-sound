@@ -69,7 +69,7 @@ class ListeningTests(unittest.TestCase):
             output = listening.render(piece, Path(directory))
             actual = listening.measure(output)
             score = listening.score_path(piece, output)
-            score_hash = listening.sha256_of(score) if score else None
+            score_hash = listening.score_sha256(score) if score else None
 
         with self.subTest(check="channels"):
             self.assertEqual(actual.channels, EXPECTED_CHANNELS)
@@ -130,6 +130,46 @@ def _piece_test(name: str):
 
 for _name in sorted(ENTRIES):
     setattr(ListeningTests, f"test_{_name.replace('-', '_')}_renders", _piece_test(_name))
+
+
+class ScoreHashTests(unittest.TestCase):
+    """The score hash ignores OSC padding; these checks need no synthesis tools."""
+
+    @staticmethod
+    def score(blob: bytes, blob_padding: bytes, address_padding: bytes = b"\0\0\0") -> bytes:
+        def message(*parts: bytes) -> bytes:
+            body = b"".join(parts)
+            return len(body).to_bytes(4, "big") + body
+        recv = message(b"/d_recv" + b"\0", b",b\0\0",
+                       len(blob).to_bytes(4, "big") + blob + blob_padding)
+        free = message(b"/n_free" + b"\0", b",i\0\0", (100).to_bytes(4, "big"))
+        late = message(b"/g_new" + b"\0" + address_padding[:1], b",\0\0\0")
+        bundles = []
+        for timetag, element in ((0, recv), (2 ** 32, free), (2 * 2 ** 32, late)):
+            bundle = b"#bundle\0" + timetag.to_bytes(8, "big") + element
+            bundles.append(len(bundle).to_bytes(4, "big") + bundle)
+        return b"".join(bundles)
+
+    def digest(self, data: bytes) -> str:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "score.osc"
+            path.write_bytes(data)
+            return listening.score_sha256(path)
+
+    def test_padding_garbage_does_not_change_the_hash(self):
+        # Regression: sclang leaves the bytes after a /d_recv blob uninitialized,
+        # so phase-weave's score hashed differently on AMD and Intel runners.
+        clean = self.digest(self.score(b"SCgf\x02", b"\0\0\0"))
+        self.assertEqual(clean, self.digest(self.score(b"SCgf\x02", b"in-")))
+        self.assertEqual(clean, self.digest(self.score(b"SCgf\x02", b"\0\0\0", b"x")))
+
+    def test_content_changes_still_change_the_hash(self):
+        self.assertNotEqual(self.digest(self.score(b"SCgf\x02", b"\0\0\0")),
+                            self.digest(self.score(b"SCgf\x03", b"\0\0\0")))
+
+    def test_a_truncated_score_is_rejected(self):
+        with self.assertRaises(ValueError):
+            self.digest(self.score(b"SCgf\x02", b"\0\0\0")[:-3])
 
 
 class ManifestTests(unittest.TestCase):

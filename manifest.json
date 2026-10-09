@@ -110,7 +110,7 @@
         "tail_peak_dbfs": -200.0,
         "reproducible": false,
         "pcm_sha256": null,
-        "score_sha256": "9fa6b2ea19077af7489c981a72cdecc7d9a432d9a4ad0fbab2b0916f4475d663",
+        "score_sha256": "8487d08557f8591cac85fc9bd5ba20510364cb5f344d541bbdc18f14ecfac3f3",
         "renders_compared": 2,
         "seconds_columns": [
           "rms_left",
@@ -1212,7 +1212,7 @@
         "tail_peak_dbfs": -200.0,
         "reproducible": true,
         "pcm_sha256": "719c3cd52423d5170cd3f3b2e19084734a4db1543565fcc5cb24b5fbc7aff6b1",
-        "score_sha256": "3fb5f9357a161c650bea3ed6e68f2ed4b4cb2d4ef9b9c4f546179442ed76e157",
+        "score_sha256": "2e57e6e9a53ba86b7d516a77fdcf54c7a5720d49fa7f59fb74e6bb9f88e04560",
         "renders_compared": 2,
         "seconds_columns": [
           "rms_left",
@@ -1757,7 +1757,7 @@
         "tail_peak_dbfs": -200.0,
         "reproducible": false,
         "pcm_sha256": null,
-        "score_sha256": "f700ace881f16a16ae18a7d674e25af5e0cac90a2acc9e1ec6927d1934e56871",
+        "score_sha256": "fd49f2bc2447816ec727f3ebcd3e1f60e7184297e62ffd64e9737c374ae1ddfb",
         "renders_compared": 2,
         "seconds_columns": [
           "rms_left",
