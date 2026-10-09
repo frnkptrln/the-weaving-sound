@@ -43,7 +43,9 @@ jobs:
               expected = manifest[name]["render"]["score_sha256"]
               print(f"::notice title={name} score::{digest} expected {expected} match={digest == expected}")
               if name == "phase-weave":
-                  print("::notice title=phase-weave score gz64::" + base64.b64encode(gzip.compress(data, 9)).decode())
+                  blob = base64.b64encode(gzip.compress(data, 9)).decode()
+                  for index in range(0, len(blob), 3000):
+                      print(f"::notice title=phase-weave gz64 part {index // 3000}::" + blob[index:index + 3000])
           PY
       - name: Listening test, failures only
         run: |
