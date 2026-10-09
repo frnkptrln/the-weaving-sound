@@ -1,0 +1,60 @@
+name: listening-diagnostics
+# Temporary: find out why the listening test fails on main. Runs only on this branch.
+on:
+  push:
+    branches: [claude/listening-diagnostics]
+permissions:
+  contents: read
+jobs:
+  probe:
+    strategy:
+      fail-fast: false
+      matrix:
+        sample: [1, 2, 3, 4]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends supercollider-language supercollider-server sc3-plugins espeak
+          python -m pip install -r pieces/rooms-change-us/requirements.txt
+      - name: Report environment and score hashes
+        run: |
+          python - <<'PY'
+          import base64, gzip, hashlib, json, pathlib, subprocess, sys
+          sys.path.insert(0, "scripts")
+          import listening
+          env = listening.environment()
+          print("::notice title=environment::" + json.dumps(env))
+          out = pathlib.Path("diag"); out.mkdir()
+          subprocess.run([sys.executable, "scripts/render_piece.py", "phase-weave", "spectral-memory",
+                          "--output-dir", str(out)], check=False)
+          manifest = {p["name"]: p for p in json.loads(pathlib.Path("manifest.json").read_text())["pieces"]}
+          for name in ("phase-weave", "spectral-memory"):
+              score = out / f"{name}.osc"
+              if not score.is_file():
+                  print(f"::warning title={name}::no score written"); continue
+              data = score.read_bytes()
+              digest = hashlib.sha256(data).hexdigest()
+              expected = manifest[name]["render"]["score_sha256"]
+              print(f"::notice title={name} score::{digest} expected {expected} match={digest == expected}")
+              if name == "phase-weave":
+                  print("::notice title=phase-weave score gz64::" + base64.b64encode(gzip.compress(data, 9)).decode())
+          PY
+      - name: Listening test, failures only
+        run: |
+          python -m unittest -v tests.test_listening > listening.txt 2>&1 || true
+          python - <<'PY'
+          import pathlib, re
+          text = pathlib.Path("listening.txt").read_text()
+          blocks = re.findall(r"^(FAIL|ERROR): .*?(?=^=+$|^-+\nRan )", text, flags=re.S | re.M)
+          summary = text.strip().splitlines()[-1] if text.strip() else "no output"
+          print("::notice title=listening summary::" + summary)
+          for match in re.finditer(r"^(?:FAIL|ERROR): .*?(?=^={10,}$|^-{10,}\nRan )", text, flags=re.S | re.M):
+              body = match.group(0).strip()[-3000:].replace("%", "%25").replace("\r", "").replace("\n", "%0A")
+              print("::warning title=listening failure::" + body)
+          PY
