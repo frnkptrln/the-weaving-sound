@@ -18,6 +18,10 @@ Thumbs.db
 .idea/
 .vscode/
 
+# Listening page, built by scripts/build_site.py (CI deploys it; not committed)
+site/
+_site/
+
 # Audio render scratch directories
 tmp/
 temp/
