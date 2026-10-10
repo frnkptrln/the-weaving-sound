@@ -24,8 +24,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Install synthesis tools
@@ -43,7 +43,7 @@ jobs:
           gh release create "$tag" renders/edition/*.mp3 renders/edition/*.wav renders/edition/edition.json \
             --title "Listening edition $(date -u +%Y-%m-%d)" --notes-file renders/notes.md --latest
           echo "release $tag" >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: listening-edition
           path: renders/edition
