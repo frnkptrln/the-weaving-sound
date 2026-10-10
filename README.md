@@ -19,6 +19,17 @@ a synthesis technique.
 
 ---
 
+## Listen
+
+The finite pieces are published as a **[listening edition](https://github.com/frnkptrln/the-weaving-sound/releases/latest)**:
+one MP3 (and the WAV it was encoded from) per renderable piece, rendered by CI
+on the manifest's toolchain and checked against `manifest.json` before upload.
+`edition.json` in the release carries the score and audio hashes, so a listener
+can tell that the file is the recorded audio and not a variant. Interactive
+pieces (`weaving-classic`, the synthesis labs) remain SuperCollider sessions.
+
+---
+
 ## Repository Layout
 
 | Directory | Role |
