@@ -17,6 +17,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -26,6 +27,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import listening  # noqa: E402
 
 MP3_BITRATE = "256k"
+REPOSITORY = "https://github.com/frnkptrln/the-weaving-sound"
 
 
 def encode_mp3(wav: Path, mp3: Path, title: str) -> None:
@@ -121,18 +123,25 @@ def build(destination: Path) -> dict:
     return edition
 
 
-def release_notes(edition: dict) -> str:
+def release_notes(edition: dict, tag: str | None = None, page_url: str | None = None) -> str:
+    """Markdown for the release; with a tag the table links the assets of that release."""
+    def asset(name: str) -> str:
+        return f"[{name}]({REPOSITORY}/releases/download/{tag}/{name})" if tag else f"`{name}`"
     lines = ["The audio that `manifest.json` describes, rendered by CI and encoded as MP3 (256 kbit/s).",
              "Each file was rendered fresh and checked against the manifest's score hash, duration and per-second levels before upload;",
-             "`edition.json` carries the hashes.", "",
-             "| Piece | Status | Length | Audio | Listen |", "|---|---|---|---|---|"]
+             "`edition.json` carries the hashes.", ""]
+    if page_url:
+        lines += [f"Listen in the browser: {page_url}", ""]
+    lines += ["| Piece | Status | Length | Audio | Listen | Download |", "|---|---|---|---|---|---|"]
     for piece in edition["pieces"]:
         minutes, seconds = divmod(int(round(piece["duration_seconds"])), 60)
         identical = "byte-identical to the manifest" if piece["audio_identical_to_manifest"] else (
             "varies between renders by design" if not piece["reproducible"] else "same levels, other CPU class")
-        lines.append(f"| `{piece['name']}` | {piece['status']} | {minutes}:{seconds:02d} | {identical} | `{piece['mp3']}` |")
+        lines.append(f"| `{piece['name']}` | {piece['status']} | {minutes}:{seconds:02d} | {identical} "
+                     f"| {asset(piece['mp3'])} | {asset(piece['wav'])} |")
     env = edition["generated_with"]
-    lines += ["", f"Rendered with {env.get('sclang')} on {env.get('os')} ({env.get('cpu')})."]
+    sclang = re.sub(r"\s*\(Built from.*?\)", "", env.get("sclang") or "sclang")
+    lines += ["", f"Rendered with {sclang} on {env.get('os')} ({env.get('cpu')})."]
     return "\n".join(lines) + "\n"
 
 
@@ -140,6 +149,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--output", type=Path, default=listening.ROOT / "renders" / "edition")
     parser.add_argument("--notes", type=Path, help="also write release notes in Markdown to this path")
+    parser.add_argument("--tag", help="the release tag the notes belong to; the notes then link its assets")
+    parser.add_argument("--page-url", help="the listening page, named in the notes when given")
     args = parser.parse_args()
     try:
         edition = build(args.output)
@@ -147,7 +158,7 @@ def main() -> int:
         print(f"Listening edition failed: {error}", file=sys.stderr)
         return 1
     if args.notes:
-        args.notes.write_text(release_notes(edition))
+        args.notes.write_text(release_notes(edition, args.tag, args.page_url))
     print(f"wrote {args.output / 'edition.json'} with {len(edition['pieces'])} pieces")
     return 0
 
