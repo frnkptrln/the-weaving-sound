@@ -1,0 +1,50 @@
+name: listening edition
+# Render the finite pieces that manifest.json describes, verify them against
+# the manifest, and publish MP3 + WAV as a GitHub release, so the anthology can
+# be heard without SuperCollider. Runs on the same image as the audio job so
+# the renders belong to the manifest's toolchain.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - manifest.json
+      - "pieces/**"
+      - "engines/**"
+      - "core/**"
+      - scripts/listening_edition.py
+      - .github/workflows/listening-edition.yml
+permissions:
+  contents: write
+concurrency:
+  group: listening-edition
+  cancel-in-progress: false
+jobs:
+  render-and-release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install synthesis tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends supercollider-language supercollider-server sc3-plugins espeak ffmpeg
+          python -m pip install -r pieces/rooms-change-us/requirements.txt
+      - name: Render, verify against manifest.json, encode
+        run: python scripts/listening_edition.py --output renders/edition --notes renders/notes.md
+      - name: Publish as a release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="listening-$(date -u +%Y-%m-%d)-${GITHUB_SHA::7}"
+          gh release create "$tag" renders/edition/*.mp3 renders/edition/*.wav renders/edition/edition.json \
+            --title "Listening edition $(date -u +%Y-%m-%d)" --notes-file renders/notes.md --latest
+          echo "release $tag" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: listening-edition
+          path: renders/edition
+          retention-days: 14
