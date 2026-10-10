@@ -26,7 +26,8 @@ python -m unittest -v tests.test_listening
   are compared. Do not loosen these tolerances to make a test pass.
 - New work starts in `sketches/`; it moves to `pieces/` with a README row,
   a launcher and a manifest entry when it is meant to be heard as part of
-  the anthology. The listening edition release is produced by CI from
+  the anthology. The listening edition release and the listening page
+  (`site/`, from `scripts/build_site.py`) are produced by CI from
   `manifest.json`, not committed.
 
 ## Working alongside other agents
