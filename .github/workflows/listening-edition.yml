@@ -42,9 +42,13 @@ jobs:
           page=$(gh api "repos/${GITHUB_REPOSITORY}/pages" --jq 'select(.build_type == "workflow") | .html_url' 2>/dev/null || true)
           echo "page=${page}" >> "$GITHUB_OUTPUT"
       - name: Render, verify against manifest.json, encode
+        env:
+          TAG: ${{ steps.release.outputs.tag }}
+          PAGE: ${{ steps.release.outputs.page }}
         run: |
-          python scripts/listening_edition.py --output renders/edition --notes renders/notes.md \
-            --tag "${{ steps.release.outputs.tag }}" ${{ steps.release.outputs.page && format('--page-url {0}', steps.release.outputs.page) || '' }}
+          args=(--output renders/edition --notes renders/notes.md --tag "$TAG")
+          if [ -n "$PAGE" ]; then args+=(--page-url "$PAGE"); fi
+          python scripts/listening_edition.py "${args[@]}"
       - name: Publish as a release
         env:
           GH_TOKEN: ${{ github.token }}
