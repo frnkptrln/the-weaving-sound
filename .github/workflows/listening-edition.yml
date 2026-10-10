@@ -39,7 +39,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           echo "tag=listening-$(date -u +%Y-%m-%d)-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
-          page=$(gh api "repos/${GITHUB_REPOSITORY}/pages" --jq 'select(.build_type == "workflow") | .html_url' 2>/dev/null || true)
+          # gh prints the 404 body to stdout when Pages is not enabled; only a successful call counts
+          page=""
+          if url=$(gh api "repos/${GITHUB_REPOSITORY}/pages" --jq 'select(.build_type == "workflow") | .html_url' 2>/dev/null) && [ -n "$url" ]; then
+            page="$url"
+          fi
           echo "page=${page}" >> "$GITHUB_OUTPUT"
       - name: Render, verify against manifest.json, encode
         env:
