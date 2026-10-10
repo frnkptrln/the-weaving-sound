@@ -167,6 +167,11 @@ six chime clocks gradually find and lose a shared pulse. It uses Python/NumPy
 and includes an uncoupled listening reference, an onset score and numeric render
 checks. It awaits listening review before joining the curated pieces.
 
+[`A place left for you`](sketches/a-place-left-for-you/) is a 132-second sketch:
+three voices inherit a five-note contour, share it, and leave their echoes
+behind. A memory-off reference uses the same score and gain. Both versions
+render offline with Python/NumPy; they remain sketches awaiting listening review.
+
 ### Validate the repository
 
 ```bash
