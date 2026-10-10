@@ -33,16 +33,26 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends supercollider-language supercollider-server sc3-plugins espeak ffmpeg
           python -m pip install -r pieces/rooms-change-us/requirements.txt
-      - name: Render, verify against manifest.json, encode
-        run: python scripts/listening_edition.py --output renders/edition --notes renders/notes.md
-      - name: Publish as a release
+      - name: Name the release and find the listening page
+        id: release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag="listening-$(date -u +%Y-%m-%d)-${GITHUB_SHA::7}"
-          gh release create "$tag" renders/edition/*.mp3 renders/edition/*.wav renders/edition/edition.json \
+          echo "tag=listening-$(date -u +%Y-%m-%d)-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          page=$(gh api "repos/${GITHUB_REPOSITORY}/pages" --jq 'select(.build_type == "workflow") | .html_url' 2>/dev/null || true)
+          echo "page=${page}" >> "$GITHUB_OUTPUT"
+      - name: Render, verify against manifest.json, encode
+        run: |
+          python scripts/listening_edition.py --output renders/edition --notes renders/notes.md \
+            --tag "${{ steps.release.outputs.tag }}" ${{ steps.release.outputs.page && format('--page-url {0}', steps.release.outputs.page) || '' }}
+      - name: Publish as a release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          gh release create "$TAG" renders/edition/*.mp3 renders/edition/*.wav renders/edition/edition.json \
             --title "Listening edition $(date -u +%Y-%m-%d)" --notes-file renders/notes.md --latest
-          echo "release $tag" >> "$GITHUB_STEP_SUMMARY"
+          echo "release $TAG" >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v7
         with:
           name: listening-edition
