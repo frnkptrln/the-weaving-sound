@@ -1,0 +1,33 @@
+name: A place left for you sketch
+
+on:
+  push:
+    paths:
+      - 'sketches/a-place-left-for-you/**'
+      - '.github/workflows/a-place-left-for-you.yml'
+  pull_request:
+    paths:
+      - 'sketches/a-place-left-for-you/**'
+      - '.github/workflows/a-place-left-for-you.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r sketches/a-place-left-for-you/requirements.txt
+      - run: python -m unittest discover -s sketches/a-place-left-for-you -p 'test_*.py' -v
+      - run: python sketches/a-place-left-for-you/render.py
+      - run: python sketches/a-place-left-for-you/render.py --memory-off
+      - uses: actions/upload-artifact@v7
+        with:
+          name: a-place-left-for-you-sketch-and-reference
+          path: sketches/a-place-left-for-you/renders/
+          retention-days: 14
