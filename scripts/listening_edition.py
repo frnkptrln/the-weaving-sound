@@ -39,7 +39,8 @@ def encode_mp3(wav: Path, mp3: Path, title: str) -> None:
         check=True, stdin=subprocess.DEVNULL)
 
 
-def verify(piece: listening.Piece, entry: dict, output: Path, workdir: Path) -> dict:
+def verify(piece: listening.Piece, entry: dict, output: Path, workdir: Path, *,
+           manifest_environment: dict, current_environment: dict) -> dict:
     """Compare a fresh render with the manifest; raise on any disagreement."""
     expected = entry["render"]
     actual = listening.measure(output)
@@ -56,8 +57,22 @@ def verify(piece: listening.Piece, entry: dict, output: Path, workdir: Path) -> 
     audio_hash_matches = None
     if expected["reproducible"]:
         audio_hash_matches = actual.pcm_sha256 == expected["pcm_sha256"]
-        if not audio_hash_matches and deviation > 0.1:
-            problems.append(f"per-second levels stray {deviation:.2f} dB from the manifest")
+        if not audio_hash_matches:
+            recorded_simd = manifest_environment.get("numpy_simd")
+            current_simd = current_environment.get("numpy_simd")
+            # Only a confirmed change of NumPy CPU class permits the level
+            # fallback. scsynth hashes apply across CPUs; unknown metadata
+            # cannot establish an exception to either render's hash contract.
+            different_simd = (
+                piece.hash_scope == "machine"
+                and isinstance(recorded_simd, str) and bool(recorded_simd.strip())
+                and isinstance(current_simd, str) and bool(current_simd.strip())
+                and recorded_simd != current_simd
+            )
+            if not different_simd:
+                problems.append("audio hash differs from the manifest in its required scope")
+            elif deviation > 0.1:
+                problems.append(f"per-second levels stray {deviation:.2f} dB from the manifest")
     else:
         tolerance = 2 * expected["seconds_max_deviation_db"] + 0.5
         if deviation > tolerance:
@@ -102,7 +117,9 @@ def build(destination: Path) -> dict:
             workdir = Path(directory) / piece.name
             workdir.mkdir()
             output = listening.render(piece, workdir)
-            report = verify(piece, entries[piece.name], output, workdir)
+            report = verify(piece, entries[piece.name], output, workdir,
+                            manifest_environment=manifest["generated_with"],
+                            current_environment=edition["generated_with"])
             wav = destination / f"{piece.name}.wav"
             mp3 = destination / f"{piece.name}.mp3"
             shutil.copyfile(output, wav)
