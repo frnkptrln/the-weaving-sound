@@ -254,7 +254,9 @@ real audio device.
 
 ## License
 
-Released into the sound under the **MIT License**.
+The engines, the core, the scripts and the tests are released into the sound under the **MIT License** (`LICENSE`).
+
+The pieces and sketches are compositions written as code. They are released under **CC BY-NC 4.0** (`LICENSES/CC-BY-NC-4.0.txt`); the MIT License does not cover them. So are the texts of this README and of `docs/`. © 2026 Frank Peterlein.
 
 ---
 
