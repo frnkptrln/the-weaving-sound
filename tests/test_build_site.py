@@ -8,6 +8,8 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "build_site.py"
+sys.path.insert(0, str(ROOT / "scripts"))
+import build_site  # noqa: E402
 
 
 class ListeningPageTests(unittest.TestCase):
@@ -28,7 +30,9 @@ class ListeningPageTests(unittest.TestCase):
         for piece in self.manifest["pieces"]:
             name = piece["name"]
             player = f'<audio controls preload="none" src="edition/{name}.mp3">'
-            if piece.get("render"):
+            if name in build_site.OFF_THE_PAGE:
+                self.assertNotIn(name, self.page, f"{name} is off the page but appears on it")
+            elif piece.get("render"):
                 self.assertIn(player, self.page, f"{name} has a render but no player")
                 self.assertIn(f'href="edition/{name}.wav"', self.page)
             else:
@@ -36,7 +40,8 @@ class ListeningPageTests(unittest.TestCase):
                 self.assertRegex(self.page, rf'<li><a href="[^"]+/pieces/{re.escape(name)}/">')
 
     def test_the_page_states_the_manifest_facts_not_others(self):
-        rendered = [p for p in self.manifest["pieces"] if p.get("render")]
+        rendered = [p for p in self.manifest["pieces"]
+                    if p.get("render") and p["name"] not in build_site.OFF_THE_PAGE]
         self.assertEqual(self.page.count("<audio "), len(rendered))
         self.assertIn(f"{len(rendered)} pieces", self.page)
         for piece in rendered:
@@ -51,9 +56,12 @@ class ListeningPageTests(unittest.TestCase):
         self.assertTrue(self.page.startswith("<!doctype html>"))
         self.assertIn('<meta name="viewport"', self.page)
 
+    def test_pieces_off_the_page_exist_and_have_a_render(self):
+        rendered = {p["name"] for p in self.manifest["pieces"] if p.get("render")}
+        self.assertLessEqual(build_site.OFF_THE_PAGE, rendered,
+                             "OFF_THE_PAGE names a piece the manifest does not render")
+
     def test_manifest_text_is_escaped(self):
-        sys.path.insert(0, str(ROOT / "scripts"))
-        import build_site  # noqa: E402
         from datetime import datetime, timezone
         manifest = {"pieces": [
             {"name": "x&y", "status": "study", "focus": "a <b> & c",
