@@ -29,8 +29,9 @@ can tell that the file is the recorded audio and not a variant. Interactive
 pieces (`weaving-classic`, the synthesis labs) remain SuperCollider sessions.
 
 The edition also has a page: `scripts/build_site.py` writes `site/index.html`
-from `manifest.json` and the pieces' READMEs — one player per finite piece,
-the sessions listed below them, no scripts, no fonts, no tracking. The
+from `manifest.json` and the pieces' READMEs — one player per finite piece
+that is offered there (`OFF_THE_PAGE` in the script names the ones that are
+not), the sessions listed below them, no scripts, no fonts, no tracking. The
 `listening page` workflow builds it on every change and deploys it with GitHub
 Pages once Pages is enabled for the repository (source: GitHub Actions). For
 listening offline, point it at a local edition:

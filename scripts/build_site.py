@@ -4,7 +4,8 @@
 The page is generated from manifest.json and the pieces' READMEs, so it says
 exactly what the manifest says — which pieces have a finite render, how long
 they are, whether a render is reproducible — and plays the MP3s of the latest
-listening edition release. It uses no scripts, no fonts and no tracking; the
+listening edition release. A rendered piece named in OFF_THE_PAGE gets no
+player and no mention; it stays in the anthology and in the edition. It uses no scripts, no fonts and no tracking; the
 only network requests are the audio files themselves.
 
 Usage:
@@ -26,6 +27,10 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
 REPOSITORY = "https://github.com/frnkptrln/the-weaving-sound"
 RELEASE_AUDIO = f"{REPOSITORY}/releases/latest/download/"
+
+# Rendered pieces that are not offered on the page. Frank decides this by ear;
+# the piece, its render and its place in the edition are unchanged.
+OFF_THE_PAGE = frozenset({"rooms-change-us"})
 
 STYLE = """
 :root { color-scheme: light dark; --ink: #1d1d1b; --paper: #f6f4ef; --muted: #6b665c; --line: #d8d3c8; --accent: #7a4b1e; }
@@ -86,7 +91,7 @@ def git_describe() -> str:
 
 def render_page(manifest: dict, audio_base: str, *, revision: str, now: datetime) -> str:
     e = html.escape
-    rendered = [p for p in manifest["pieces"] if p.get("render")]
+    rendered = [p for p in manifest["pieces"] if p.get("render") and p["name"] not in OFF_THE_PAGE]
     rendered.sort(key=lambda p: p.get("status") != "piece")  # pieces first, studies after, manifest order within
     sessions = [p for p in manifest["pieces"] if not p.get("render")]
     out = [
@@ -96,7 +101,7 @@ def render_page(manifest: dict, audio_base: str, *, revision: str, now: datetime
         '<meta name="description" content="The finite pieces of the anthology, rendered by CI and checked against the manifest.">',
         f"<style>{STYLE}</style>", "</head>", "<body>", "<header>",
         f'<h1>the-weaving-sound <small>listening edition · {len(rendered)} pieces</small></h1>',
-        "<p>The finite pieces of the anthology, as audio. Every file was rendered by CI on the "
+        "<p>Finite pieces of the anthology, as audio. Every file was rendered by CI on the "
         "manifest's toolchain and checked against <code>manifest.json</code> — score hash, duration, "
         "per-second levels — before it was published; <code>edition.json</code> in the "
         f'<a href="{e(REPOSITORY)}/releases/latest">release</a> carries the hashes, so a listener can '
@@ -156,7 +161,7 @@ def main() -> int:
     page = render_page(manifest, args.audio_base, revision=git_describe(), now=datetime.now(timezone.utc))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(page, encoding="utf-8")
-    rendered = sum(1 for p in manifest["pieces"] if p.get("render"))
+    rendered = sum(1 for p in manifest["pieces"] if p.get("render") and p["name"] not in OFF_THE_PAGE)
     print(f"wrote {args.output} with {rendered} playable pieces")
     return 0
 
